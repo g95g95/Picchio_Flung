@@ -1,0 +1,34 @@
+1.Seleziona un comune nel cui territorio è presente almeno un'uscita dell'autostrada o della superstrada
+Farflung: Colonnella (TE)
+Elusive: Ancarano (TE)
+Rare: Fermo (FM), Pedaso (FM), Monsampolo del Tronto (AP), Maltignano (AP)
+Uncommon: Porto San Giorgio (FM), Grottammare (AP), Monteprandone (AP), Spinetoli (AP)
+Common: San Benedetto del Tronto (AP), Ascoli Piceno (AP)
+
+2.Seleziona un comune in cui è presente almeno un Conad in attività
+Farflung: Monte San Pietrangeli (FM), Magliano di Tenna (FM), Carassai (AP)
+Elusive: Montegranaro (FM), Montegiorgio (FM), Montefiore dell'Aso (AP), Nereto (TE)
+Rare: Sant'Elpidio a Mare (FM), Pedaso (FM), Amandola (FM), Comunanza (AP), Offida (AP), Monsampolo del Tronto (AP), Colli del Tronto (AP), Colonnella (TE), Civitella del Tronto (TE)
+Uncommon: Porto San Giorgio (FM), Grottammare (AP), Monteprandone (AP), Spinetoli (AP), Castel di Lama (AP), Folignano (AP), Sant'Egidio alla Vibrata (TE), Martinsicuro (TE)
+Common: Fermo (FM), San Benedetto del Tronto (AP), Ascoli Piceno (AP)
+
+3.Seleziona un comune il cui territorio è attraversato dal fiume Tronto
+Farflung: Sant'Egidio alla Vibrata (TE)
+Elusive: Maltignano (AP)
+Rare: Monsampolo del Tronto (AP), Controguerra (TE), Ancarano (TE)
+Uncommon: Monteprandone (AP), Spinetoli (AP), Colli del Tronto (AP), Martinsicuro (TE), Colonnella (TE), Acquasanta Terme (AP), Arquata del Tronto (AP)
+Common: Ascoli Piceno (AP), San Benedetto del Tronto (AP)
+
+4.Seleziona un comune in cui non era possibile acquistare biglietti per l'ultimo derby Sambenedettese - Ascoli allo stadio Riviera delle Palme di San Benedetto del Tronto
+Farflung: Montedinove (AP), Force (AP), Rotella (AP)
+Elusive: Montemonaco (AP), Comunanza (AP), Montegallo (AP), Sant'Egidio alla Vibrata (TE)
+Rare: Arquata del Tronto (AP), Roccafluvione (AP), Appignano del Tronto (AP), Maltignano (AP)
+Uncommon: Venarotta (AP), Acquasanta Terme (AP), Folignano (AP), Castel di Lama (AP)
+Common: Ascoli Piceno (AP)
+
+5.Seleziona un comune che fa parte di una comunità montana
+Farflung: Montelparo (FM), Montedinove (AP), Castignano (AP), Appignano del Tronto (AP)
+Elusive: Santa Vittoria in Matenano (FM), Smerillo (FM), Montefalcone Appennino (FM), Force (AP), Rotella (AP), Palmiano (AP)
+Rare: Amandola (FM), Comunanza (AP), Roccafluvione (AP), Venarotta (AP)
+Uncommon: Montefortino (FM), Montegallo (AP), Acquasanta Terme (AP), Valle Castellana (TE)
+Common: Montemonaco (AP), Arquata del Tronto (AP)
