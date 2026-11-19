@@ -55,6 +55,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 
 ## Condivisione
 
+- Il testo condiviso ha una riga per domanda: numero, quadratino della fascia, nome del comune scelto (`1 🟨 Offida`). Il comune si vede anche con risposta errata. Chi non ha ancora giocato vede le risposte: è una scelta dell'utente.
 - Il testo condiviso finisce con il link del risultato: `https://lendane.tttai.it/?km=295&n=2`.
 - `n` è il numero della spedizione. C'è solo in modalità quotidiana e archivio. In modalità illimitata il link ha solo `km`.
 - L'indirizzo base è `SITO`, costante in `index.html`. Il gioco ignora `km` e `n` all'apertura.
