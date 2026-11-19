@@ -28,6 +28,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - `dati/comuni-extra.js`: aggiunge a `MAP.ap` i 14 comuni FM e ricalcola `MAP.apbb`. È generato: non modificarlo a mano.
 - `dati/banca.js`: `const QS` con i dati dei comuni e la banca interna di domande.
 - `strumenti/aggiungi-comuni.mjs`: genera `dati/comuni-extra.js`.
+- `anteprima.png`: immagine 1200x630 dell'anteprima del link nei messaggi. La genera `strumenti/anteprima.html` (comando nel file).
 - `esempi/spedizione-esempio.txt`: una spedizione nel testo originale dell'utente, con due correzioni confermate. Carassai è AP. Il nome corretto è "Montefalcone Appennino".
 - `esempi/foglio-esempio.csv`: la stessa spedizione nel formato del foglio, data 2026-11-19. Si può importare in Google Sheets.
 - `index.html` carica gli script in questo ordine: `dati/mappa.js`, `dati/comuni-extra.js`, `dati/banca.js`, `config.js`, gioco.
@@ -41,11 +42,20 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - `server.py` (Python 3.12, solo libreria standard) serve il gioco su `127.0.0.1:8795`. `GET /healthz` risponde `ok`.
 - `server.py` serve solo i file in `PUBBLICI` e i `.js` di `dati/`. Tutto il resto del repo risponde 404.
 - Un nuovo file pubblico (immagine, suono, altro script) va aggiunto a `PUBBLICI` o `CARTELLE_PUBBLICHE`, altrimenti risponde 404.
-- Da Internet si arriva solo tramite il tunnel cloudflared del PC, che punta a `http://localhost:8795`.
+- Indirizzo pubblico: `https://lenta.tttai.it`. Da Internet si arriva solo tramite il tunnel cloudflared del PC, che punta a `http://127.0.0.1:8795`.
+- Cloudflare Access ha un'eccezione Bypass per `lenta.tttai.it`: il gioco si apre senza login.
 - Il server gira come attività pianificata `PicchioFlung` con l'account dedicato `picchioflung-svc`, che può scrivere solo in `logs/`.
 - `INSTALLA.bat` installa il servizio. `RIAVVIA.bat` fa `git pull --ff-only` e riavvia. `FERMA.bat` ferma. La configurazione è `servizio/servizio.json`.
 - A ogni push su `main` AutoDeploy lancia `RIAVVIA.bat` nella copia `C:\Users\Giulio\Desktop\Guloi\Picchio_Flung`. Quella copia deve restare sul branch `main`.
 - Log: `logs/server.log`.
+
+## Condivisione
+
+- Il testo condiviso finisce con il link `SITO` (`https://lenta.tttai.it`), costante in `index.html`.
+- Sul telefono il bottone Condividi apre il foglio di condivisione del sistema (`navigator.share`). Sul computer copia il testo negli appunti.
+- I meta tag Open Graph in `<head>` danno l'anteprima del link: titolo, descrizione, `anteprima.png`. `og:url` e `og:image` hanno l'indirizzo completo.
+- Se cambia il dominio vanno aggiornati `SITO` e i meta tag `og:url` e `og:image`.
+- WhatsApp e Telegram tengono in cache l'anteprima di un link per giorni.
 
 ### Rigenerare `dati/comuni-extra.js`
 
@@ -190,7 +200,6 @@ Tutte le chiavi hanno il prefisso `lenta:`.
 
 Chiedi all'utente prima di implementare la parte collegata. Non scegliere una risposta plausibile.
 
-1. Dominio pubblico del gioco (hostname del tunnel Cloudflare). Web server, HTTPS e deploy sono decisi: vedi "Pubblicazione".
-2. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
-3. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
-4. Etichette del percorso illeggibili su schermo stretto.
+1. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
+2. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
+3. Etichette del percorso illeggibili su schermo stretto.

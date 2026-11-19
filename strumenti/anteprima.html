@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!-- Genera anteprima.png (1200x630), l'immagine mostrata quando si condivide il link del gioco.
+     Dalla radice del repo:
+     msedge --headless --disable-gpu --hide-scrollbars --window-size=1200,630 --screenshot=anteprima.png strumenti/anteprima.html -->
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../font.css">
+<style>
+:root{--paper:#f4ead0;--ink:#2a1f17;--ink2:#5b4a3a;--red:#b8322a;--sea:#a8c2c9;--land:#f0e1ba;--bgland:#d9d3b6}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden;background:var(--bgland)}
+svg{position:absolute;inset:0;width:1200px;height:630px}
+.frame{position:absolute;inset:0;border:14px solid var(--ink);pointer-events:none}
+.card{position:absolute;left:70px;top:50%;transform:translateY(-50%);width:520px;background:var(--paper);border:3px solid var(--ink);
+  box-shadow:10px 10px 0 var(--ink);padding:38px 36px 34px;text-align:center;font-family:'Courier Prime',monospace}
+h1{font-family:'Bowlby One SC',serif;font-size:118px;letter-spacing:.06em;color:var(--ink);text-shadow:6px 6px 0 var(--red);line-height:1}
+h2{font-size:19px;letter-spacing:.2em;white-space:nowrap;color:var(--red);margin:20px 0 16px;display:flex;align-items:center;gap:14px;justify-content:center;font-weight:700}
+h2:before,h2:after{content:"";height:8px;width:38px;border-top:2px solid var(--red);border-bottom:2px solid var(--red)}
+p{font-size:23px;color:var(--ink2);line-height:1.35}
+</style>
+</head>
+<body>
+<svg id="m"></svg>
+<div class="card"><h1>LENTÀ</h1><h2>LA SPEDIZIONE QUOTIDIANA</h2><p>Piceno, Fermano e Val Vibrata.<br>Cinque domande, punta un comune.</p></div>
+<div class="frame"></div>
+<script src="../dati/mappa.js"></script>
+<script src="../dati/comuni-extra.js"></script>
+<script>
+const NS='http://www.w3.org/2000/svg', svg=document.getElementById('m');
+const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e};
+// I comuni a destra: il centro di MAP.apbb cade a x=870 px, l'altezza dei comuni occupa ~88% dell'immagine.
+const [x0,y0,x1,y1]=MAP.apbb, h=(y1-y0)/0.88, w=h*1200/630, cx=(x0+x1)/2-(870-600)*w/1200, cy=(y0+y1)/2;
+svg.setAttribute('viewBox',`${cx-w/2} ${cy-h/2} ${w} ${h}`);
+const g=el('g',{},svg), s=w/1200;
+el('rect',{x:-2000,y:-2000,width:MAP.W+4000,height:MAP.H+4000,fill:'#d9d3b6'},g);
+MAP.bg.forEach(b=>el('path',{d:b.d,fill:'#d9d3b6',stroke:'#9a917a','stroke-width':.8*s,'stroke-dasharray':`${4*s} ${3*s}`},g));
+el('path',{d:MAP.sea,fill:'#a8c2c9',stroke:'#2a1f17','stroke-width':1.5*s},g);
+MAP.ap.forEach(c=>el('path',{d:c.d,fill:'none',stroke:'#2a1f17','stroke-width':6*s},g));
+MAP.ap.forEach(c=>el('path',{d:c.d,fill:'#f0e1ba',stroke:'#2a1f17','stroke-width':1.3*s},g));
+// Una bandierina rossa su Ascoli Piceno (044007), la partenza del viaggio.
+const ap=MAP.ap.find(c=>c.id==='044007');
+if(ap){ const [px,py]=ap.pin, k=2.6*s, f=el('g',{transform:`translate(${px},${py}) scale(${k})`},g);
+  el('ellipse',{cx:0,cy:2,rx:9,ry:4,fill:'none',stroke:'#b8322a','stroke-width':2},f);
+  el('line',{x1:0,y1:2,x2:0,y2:-30,stroke:'#2a1f17','stroke-width':2.5},f);
+  el('path',{d:'M0 -30L18 -24L0 -18Z',fill:'#b8322a',stroke:'#2a1f17','stroke-width':1.2},f); }
+</script>
+</body>
+</html>

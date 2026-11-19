@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Lentà — La spedizione quotidiana nel Piceno</title>
+<meta name="description" content="Piceno, Fermano e Val Vibrata. Cinque domande al giorno: punta un comune, le risposte rare vanno più lontano.">
+<meta name="theme-color" content="#2a1f17">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AD%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lentà">
+<meta property="og:locale" content="it_IT">
+<meta property="og:url" content="https://lenta.tttai.it/">
+<meta property="og:title" content="Lentà — La spedizione quotidiana">
+<meta property="og:description" content="Piceno, Fermano e Val Vibrata. Cinque domande al giorno: punta un comune, le risposte rare vanno più lontano.">
+<meta property="og:image" content="https://lenta.tttai.it/anteprima.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Lentà: la mappa dei comuni del Piceno, del Fermano e della Val Vibrata">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="stylesheet" href="font.css">
 <style>
 :root{
@@ -569,7 +584,12 @@ function finishGame(){
 }
 
 /* ---------- camp ---------- */
-function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}`; }
+const SITO='https://lenta.tttai.it';
+function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}\n${SITO}`; }
+// Telefono: foglio di condivisione del sistema (WhatsApp, Telegram...). Computer o rifiuto: copia negli appunti.
+async function shareResult(){ const t=shareText();
+  if(navigator.share&&matchMedia('(pointer:coarse)').matches){ try{ await navigator.share({text:t}); return; }catch(e){ if(e.name==='AbortError') return; } }
+  try{ await navigator.clipboard.writeText(t); toast('Copiato! Incollalo dove vuoi'); }catch(e){ openModal('<h2>Condividi</h2><p>Copia questo testo:</p><pre style="white-space:pre-wrap;border:1px solid;padding:10px;font-size:15px">'+esc(t)+'</pre>'); } }
 function showCamp(){
   show('camp'); $('modal').classList.remove('on');
   if(G.newP===undefined){ G.newP=0; G.newS=0; }
@@ -595,7 +615,7 @@ function showCamp(){
    ${G.mode==='daily'?`<div class="countdown" id="cd"></div>`:''}
    <button class="homebtn" onclick="${G.mode==='daily'?'goHome()':'startUnlimited()'}">${G.mode==='daily'?'Torna alla home':'Un\'altra spedizione'}</button>
    ${G.mode==='daily'?'<button class="homebtn" onclick="startUnlimited()">∞ Gioca ancora (illimitata)</button>':'<button class="homebtn" onclick="goHome()">Torna alla home</button>'}`;
-  $('shareBtn').onclick=async()=>{ try{ await navigator.clipboard.writeText(shareText()); toast('Copiato! Incollalo dove vuoi'); }catch(e){ openModal('<h2>Condividi</h2><p>Copia questo testo:</p><pre style="white-space:pre-wrap;border:1px solid;padding:10px;font-size:15px">'+shareText()+'</pre>'); } };
+  $('shareBtn').onclick=shareResult;
   tick();
 }
 function tick(){ const e=$('cd'); if(!e||!$('camp').classList.contains('on')) return; const n=new Date(), m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1); const s=Math.floor((m-n)/1000);

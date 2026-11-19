@@ -13,7 +13,7 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 # Percorsi pubblici: file esatti, o cartelle (con "/" finale) di cui si servono i file .js.
-PUBBLICI = {"index.html", "font.css", "config.js", "esempi/foglio-esempio.csv"}
+PUBBLICI = {"index.html", "font.css", "config.js", "anteprima.png", "esempi/foglio-esempio.csv"}
 CARTELLE_PUBBLICHE = {"dati/"}
 HOST = os.environ.get("PICCHIO_HOST", "127.0.0.1")
 PORT = int(os.environ.get("PICCHIO_PORT", "8795"))
