@@ -9,7 +9,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 ## Decisioni prese
 
 - Il gioco è solo frontend. Non esiste backend, non esistono script lato server, non esistono account.
-- L'hosting è un PC Windows 11 di casa (homeserver) che serve file statici.
+- L'hosting è un PC Windows 11 di casa (homeserver) che serve file statici. Vedi "Pubblicazione".
 - Un foglio Google contiene, per ogni giorno, le 5 domande con i comuni validi.
 - Il browser legge il foglio direttamente, come CSV dall'indirizzo gviz. Vedi "Foglio Google".
 - L'utente assegna a mano la fascia di ogni comune nel foglio. Nessuna regola automatica.
@@ -34,6 +34,18 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - `dati/mappa.js` e `dati/banca.js` hanno righe molto lunghe. Leggili con uno script, non con un editor.
 - Gli script che hanno generato `dati/mappa.js` e `dati/banca.js` non sono nel repo.
 - Non esistono build, dipendenze o test. Il codice è JavaScript puro.
+- `server.py`, `RIAVVIA.bat`, `FERMA.bat`, `INSTALLA.bat`, `servizio/`: il servizio Windows che pubblica il gioco. Vedi "Pubblicazione".
+
+## Pubblicazione
+
+- `server.py` (Python 3.12, solo libreria standard) serve il gioco su `127.0.0.1:8795`. `GET /healthz` risponde `ok`.
+- `server.py` serve solo i file in `PUBBLICI` e i `.js` di `dati/`. Tutto il resto del repo risponde 404.
+- Un nuovo file pubblico (immagine, suono, altro script) va aggiunto a `PUBBLICI` o `CARTELLE_PUBBLICHE`, altrimenti risponde 404.
+- Da Internet si arriva solo tramite il tunnel cloudflared del PC, che punta a `http://localhost:8795`.
+- Il server gira come attività pianificata `PicchioFlung` con l'account dedicato `picchioflung-svc`, che può scrivere solo in `logs/`.
+- `INSTALLA.bat` installa il servizio. `RIAVVIA.bat` fa `git pull --ff-only` e riavvia. `FERMA.bat` ferma. La configurazione è `servizio/servizio.json`.
+- A ogni push su `main` AutoDeploy lancia `RIAVVIA.bat` nella copia `C:\Users\Giulio\Desktop\Guloi\Picchio_Flung`. Quella copia deve restare sul branch `main`.
+- Log: `logs/server.log`.
 
 ### Rigenerare `dati/comuni-extra.js`
 
@@ -178,7 +190,7 @@ Tutte le chiavi hanno il prefisso `lenta:`.
 
 Chiedi all'utente prima di implementare la parte collegata. Non scegliere una risposta plausibile.
 
-1. Web server sul PC Windows 11, dominio, HTTPS, metodo di deploy.
+1. Dominio pubblico del gioco (hostname del tunnel Cloudflare). Web server, HTTPS e deploy sono decisi: vedi "Pubblicazione".
 2. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
 3. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
 4. Etichette del percorso illeggibili su schermo stretto.

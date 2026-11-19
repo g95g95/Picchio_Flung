@@ -1,0 +1,16 @@
+{
+  "nome": "PicchioFlung",
+  "account": "picchioflung-svc",
+  "programmi": [
+    {
+      "nome": "server",
+      "comando": [
+        "C:\\Program Files\\Python312\\python.exe",
+        "-I",
+        "server.py"
+      ],
+      "porta": 8795,
+      "controllo": "http://127.0.0.1:8795/healthz"
+    }
+  ]
+}
