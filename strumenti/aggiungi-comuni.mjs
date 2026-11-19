@@ -6,6 +6,13 @@ const COMUNI=[
   ['Fermo','FM'],['Pedaso','FM'],['Porto San Giorgio','FM'],['Monte San Pietrangeli','FM'],['Magliano di Tenna','FM'],
   ['Montegranaro','FM'],['Montegiorgio','FM'],["Sant'Elpidio a Mare",'FM'],['Amandola','FM'],['Montelparo','FM'],
   ['Santa Vittoria in Matenano','FM'],['Smerillo','FM'],['Montefalcone Appennino','FM'],['Montefortino','FM'],
+  // Gli altri 26 comuni: con questi la provincia di Fermo è completa (40 comuni).
+  ['Altidona','FM'],['Belmonte Piceno','FM'],['Campofilone','FM'],['Falerone','FM'],["Francavilla d'Ete",'FM'],
+  ['Grottazzolina','FM'],['Lapedona','FM'],['Massa Fermana','FM'],['Monsampietro Morico','FM'],['Montappone','FM'],
+  ['Monte Giberto','FM'],['Monte Rinaldo','FM'],['Monte Urano','FM'],['Monte Vidon Combatte','FM'],['Monte Vidon Corrado','FM'],
+  ['Monteleone di Fermo','FM'],['Monterubbiano','FM'],['Montottone','FM'],['Moresco','FM'],['Ortezzano','FM'],
+  ['Petritoli','FM'],['Ponzano di Fermo','FM'],["Porto Sant'Elpidio",'FM'],['Rapagnano','FM'],['Servigliano','FM'],
+  ['Torre San Patrizio','FM'],
 ];
 const PROV={AP:'044',FM:'109',TE:'067'};
 const SRC=p=>`https://raw.githubusercontent.com/openpolis/geojson-italy/master/geojson/limits_P_${+p}_municipalities.geojson`;

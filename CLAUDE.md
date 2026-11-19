@@ -14,7 +14,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - Il browser legge il foglio direttamente, come CSV dall'indirizzo gviz. Vedi "Foglio Google".
 - L'utente assegna a mano la fascia di ogni comune nel foglio. Nessuna regola automatica.
 - Le domande usano comuni di tre province: Ascoli Piceno (AP), Fermo (FM), Teramo (TE).
-- La mappa non include tutta la provincia di Fermo. Include solo i 14 comuni FM elencati sotto.
+- La mappa include tutti i 40 comuni della provincia di Fermo.
 - I confini dei comuni FM vengono da openpolis `geojson-italy`, con la stessa proiezione di `dati/mappa.js`.
 - La banca interna di 33 domande resta. Vale per i giorni che il foglio non contiene e per la modalità illimitata.
 - Lingua dell'interfaccia: italiano. I nomi delle fasce sono in dialetto ascolano.
@@ -25,7 +25,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - `font.css`: i font (Courier Prime, Special Elite, Bowlby One SC) in base64.
 - `config.js`: `FOGLIO_URL`, l'indirizzo del foglio. Nel repo punta a `esempi/foglio-esempio.csv`.
 - `dati/mappa.js`: `const MAP` con i 46 comuni AP/TE e lo sfondo.
-- `dati/comuni-extra.js`: aggiunge a `MAP.ap` i 14 comuni FM e ricalcola `MAP.apbb`. È generato: non modificarlo a mano.
+- `dati/comuni-extra.js`: aggiunge a `MAP.ap` i 40 comuni FM e ricalcola `MAP.apbb`. È generato: non modificarlo a mano.
 - `dati/banca.js`: `const QS` con i dati dei comuni e la banca interna di domande.
 - `strumenti/aggiungi-comuni.mjs`: genera `dati/comuni-extra.js`.
 - `anteprima.png`: immagine 1200x630 dell'anteprima del link nei messaggi. La genera `strumenti/anteprima.html` (comando nel file).
@@ -127,8 +127,8 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 ## Regola dei 46 comuni
 
 - Le 33 domande della banca interna valgono solo per i 46 comuni di `QS.comuni` (33 AP, 13 TE).
-- Con una domanda della banca i 14 comuni FM restano disegnati ma sono spenti e non selezionabili.
-- Con una domanda del foglio tutti i 60 comuni sono selezionabili.
+- Con una domanda della banca i 40 comuni FM restano disegnati ma sono spenti e non selezionabili.
+- Con una domanda del foglio tutti gli 86 comuni sono selezionabili.
 - La regola vale solo per la mappa della partita. Home, campo e "Impara i comuni" mostrano tutti i comuni normali.
 - In "Impara i comuni" un comune senza dati in `QS.comuni` mostra solo il nome.
 
@@ -159,7 +159,7 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 
 ## Dati
 
-- `MAP`: `W`, `H`, `ap` (60 comuni: `id`, `nome`, `d`, `bb`, `pin`), `bg` (373 tracciati di sfondo), `sea`, `apbb`.
+- `MAP`: `W`, `H`, `ap` (86 comuni: `id`, `nome`, `d`, `bb`, `pin`), `bg` (373 tracciati di sfondo), `sea`, `apbb`.
 - `QS.comuni`: per codice ISTAT, `nome`, `pop`, `km2`, `alt`. Contiene solo i 46 comuni AP/TE.
 - `QS.domande`: 33 domande. Ogni domanda ha `id`, `q` (testo), `note`, `a`.
 - `a` è una mappa codice ISTAT → `{t, e}`. `e` è la spiegazione mostrata dopo la risposta.
@@ -179,8 +179,8 @@ Tutte le chiavi hanno il prefisso `lenta:`.
 ## Vincoli da rispettare
 
 - I tracciati `MAP.bg` hanno solo la forma (`d`). Non hanno nome né codice.
-- I 14 comuni FM sulla mappa sono: Fermo, Pedaso, Porto San Giorgio, Monte San Pietrangeli, Magliano di Tenna, Montegranaro, Montegiorgio, Sant'Elpidio a Mare, Amandola, Montelparo, Santa Vittoria in Matenano, Smerillo, Montefalcone Appennino, Montefortino.
-- La mappa ha 60 comuni giocabili: 33 AP, 13 TE, 14 FM.
+- I comuni FM sulla mappa sono tutti i 40 della provincia di Fermo, elencati in `COMUNI` in `strumenti/aggiungi-comuni.mjs`.
+- La mappa ha 86 comuni giocabili: 33 AP, 13 TE, 40 FM.
 - I risultati salvati contengono gli id delle domande. L'archivio riapre un giorno del foglio solo se il foglio contiene ancora quel giorno.
 - Il souvenir "Lupo di mare" legge `QBY.mare`. Si rompe se la domanda con id `mare` sparisce dalla banca.
 - Il testo "Come si gioca" (`HOWTO`) contiene numeri e fonti scritti a mano. Aggiornalo quando cambiano i dati.
@@ -201,5 +201,5 @@ Tutte le chiavi hanno il prefisso `lenta:`.
 Chiedi all'utente prima di implementare la parte collegata. Non scegliere una risposta plausibile.
 
 1. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
-2. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
+2. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 40 comuni FM.
 3. Etichette del percorso illeggibili su schermo stretto.

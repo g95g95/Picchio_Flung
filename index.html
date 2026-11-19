@@ -474,7 +474,7 @@ $('modal').onclick=e=>{ if(e.target.id==='modal') $('modal').classList.remove('o
 function toast(t){ const e=$('toast'); e.textContent=t; e.classList.add('on'); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove('on'),1800); }
 
 const HOWTO=`<h2>Come si gioca</h2>
-<p>Ogni giorno Lentà ha una nuova <b>spedizione</b>: cinque domande, uguali per tutti. Per ognuna punta <b>un comune</b> del Piceno, del Fermano o della Val Vibrata (60 in tutto: 33 della provincia di Ascoli, 14 del Fermano, 13 del Teramano) che risponde alla domanda e conferma con <b>Pianta la bandierina</b>.</p>
+<p>Ogni giorno Lentà ha una nuova <b>spedizione</b>: cinque domande, uguali per tutti. Per ognuna punta <b>un comune</b> del Piceno, del Fermano o della Val Vibrata (86 in tutto: 33 della provincia di Ascoli, tutti i 40 della provincia di Fermo, 13 del Teramano) che risponde alla domanda e conferma con <b>Pianta la bandierina</b>.</p>
 <p>Quasi sempre le risposte giuste sono tante. Quelle ovvie ti portano poco lontano, quelle a cui pensano in pochi ti portano molto più in là:</p>
 <div class="tierlist">${TIERS.map(t=>`<span class="stamp" style="color:${t.hex};font-size:13px;min-width:0">${t.n}</span><span>+${t.km} km</span>`).join('')}<span class="stamp" style="color:${MISS.hex};font-size:13px;min-width:0">${MISS.n}</span><span>0 km — risposta sbagliata</span></div>
 <p>Al massimo fai 500 km. Parti da Piazza del Popolo e dalla chiesa di San Francesco, attraversi il Tronto e sali tra colline e monti fino al Lago di Pilato. L'arrivo è sui ghiacci del Vettore.</p>
