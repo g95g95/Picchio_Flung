@@ -365,12 +365,15 @@ function makeMap(container,opts={}){
   // pan / zoom
   const ptr=new Map(); let moved=0, startDist=0, startVb=null;
   const toSvg=(cx,cy)=>{ const r=svg.getBoundingClientRect(); const s=Math.max(vb.w/r.width,vb.h/r.height); const ox=(r.width*s-vb.w)/2, oy=(r.height*s-vb.h)/2; return [vb.x+(cx-r.left)*s-ox, vb.y+(cy-r.top)*s-oy, s]; };
-  svg.addEventListener('pointerdown',e=>{ ptr.set(e.pointerId,[e.clientX,e.clientY]); moved=0; svg.setPointerCapture(e.pointerId); if(ptr.size===2){const [a,b]=[...ptr.values()]; startDist=Math.hypot(a[0]-b[0],a[1]-b[1]); startVb={...vb};} });
+  // La cattura del puntatore parte solo con il trascinamento: catturato da subito, il click andrebbe all'svg e non al comune.
+  const capture=id=>{ try{ if(!svg.hasPointerCapture(id)) svg.setPointerCapture(id); }catch(_){} };
+  svg.addEventListener('pointerdown',e=>{ ptr.set(e.pointerId,[e.clientX,e.clientY]); moved=0; if(ptr.size===2){ ptr.forEach((_,id)=>capture(id)); const [a,b]=[...ptr.values()]; startDist=Math.hypot(a[0]-b[0],a[1]-b[1]); startVb={...vb};} });
   svg.addEventListener('pointermove',e=>{ if(!ptr.has(e.pointerId)) return; const prev=ptr.get(e.pointerId); ptr.set(e.pointerId,[e.clientX,e.clientY]);
-    if(ptr.size===1){ const [,,s]=toSvg(0,0); const dx=e.clientX-prev[0], dy=e.clientY-prev[1]; moved+=Math.abs(dx)+Math.abs(dy); if(moved>6){ vb.x-=dx*s; vb.y-=dy*s; apply(); } }
+    if(ptr.size===1){ const [,,s]=toSvg(0,0); const dx=e.clientX-prev[0], dy=e.clientY-prev[1]; moved+=Math.abs(dx)+Math.abs(dy); if(moved>6){ capture(e.pointerId); vb.x-=dx*s; vb.y-=dy*s; apply(); } }
     else if(ptr.size===2){ moved=99; const [a,b]=[...ptr.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); zoomAt((a[0]+b[0])/2,(a[1]+b[1])/2, startVb.w*startDist/d/vb.w); } });
   const up=e=>{ ptr.delete(e.pointerId); };
   svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+  svg.addEventListener('pointerleave',e=>{ if(!svg.hasPointerCapture(e.pointerId)) ptr.delete(e.pointerId); });
   function zoomAt(cx,cy,f){ const [px,py]=toSvg(cx,cy); const nw=Math.min(MAP.W,Math.max(60,vb.w*f)); const k=nw/vb.w; vb={x:px-(px-vb.x)*k,y:py-(py-vb.y)*k,w:nw,h:vb.h*k}; apply(); }
   svg.addEventListener('wheel',e=>{ e.preventDefault(); zoomAt(e.clientX,e.clientY,e.deltaY>0?1.15:1/1.15); },{passive:false});
   if(opts.zoom!==false){ const zc=document.createElement('div'); zc.className='zoomctl'; zc.innerHTML='<button aria-label="Zoom avanti">+</button><button aria-label="Zoom indietro">−</button><button aria-label="Tutta la provincia" style="font-size:13px">⤢</button>'; container.appendChild(zc);
@@ -395,7 +398,7 @@ function makeMap(container,opts={}){
       if(num) { const t=el('text',{x:0,y:-18,'font-size':11,'text-anchor':'middle',fill:'#fff','font-weight':700,'font-family':'Courier Prime'},head); t.textContent=num; } else el('circle',{cx:0,cy:-22,r:4,fill:'#f4ead0'},head);
       if(dropAnim) head.animate([{transform:'translateY(-60px)',opacity:0},{transform:'translateY(4px)',opacity:1,offset:.75},{transform:'translateY(0)'}],{duration:450,easing:'ease-in'});
       apply(); return g; },
-    labels(on){ labels.innerHTML=''; if(on) MAP.ap.forEach(c=>{ const t=el('text',{x:c.pin[0],y:c.pin[1]-4,class:'lab'},labels); t.textContent=c.nome.replace('San Benedetto del Tronto','S. Benedetto').replace(' del Tronto',' d.T.').replace(' delle Marche',' d.M.'); }); apply(); }
+    labels(on){ labels.innerHTML=''; if(on) MAP.ap.filter(c=>on===true||c.id===on).forEach(c=>{ const t=el('text',{x:c.pin[0],y:c.pin[1]-4,class:'lab'},labels); t.textContent=c.nome.replace('San Benedetto del Tronto','S. Benedetto').replace(' del Tronto',' d.T.').replace(' delle Marche',' d.M.'); }); apply(); }
   };
   requestAnimationFrame(()=>home(0));
   return api;
@@ -484,7 +487,7 @@ function openArchive(){ const t=dayIndex(); let h='<h2>Archivio</h2><p>Gioca le 
   openModal(h+'</div>'); }
 
 function openLearn(){ $('modal').classList.remove('on'); show('learn'); $('hdSmall').textContent='Impara'; $('hdBig').textContent=MAP.ap.length+' comuni'; $('hdProg').style.display='none';
-  if(!learnMap){ learnMap=makeMap($('learnMap'),{onPick:id=>{ learnMap.select(id); const c=QS.comuni[id]; $('learnInfo').innerHTML=`<span style="font-size:16px">${COM[id].nome}</span>`+(c?` · ${c.pop.toLocaleString('it-IT')} ab. · ${String(c.km2).replace('.',',')} km² · municipio a ${c.alt} m`:''); }}); learnMap.labels(true); } }
+  if(!learnMap){ learnMap=makeMap($('learnMap'),{onPick:id=>{ learnMap.select(id); learnMap.labels(id); const c=QS.comuni[id]; $('learnInfo').innerHTML=`<span style="font-size:16px">${COM[id].nome}</span>`+(c?` · ${c.pop.toLocaleString('it-IT')} ab. · ${String(c.km2).replace('.',',')} km² · municipio a ${c.alt} m`:''); }}); } }
 
 /* ---------- game ---------- */
 async function startDaily(i){ $('modal').classList.remove('on'); await FOGLIO_PRONTO; const saved=store.get('day:'+i,null);
