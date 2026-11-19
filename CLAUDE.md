@@ -11,28 +11,55 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - Il gioco è solo frontend. Non esiste backend, non esistono script lato server, non esistono account.
 - L'hosting è un PC Windows 11 di casa (homeserver) che serve file statici.
 - Un foglio Google contiene, per ogni giorno, le 5 domande con i comuni validi.
-- Il browser legge il foglio direttamente.
+- Il browser legge il foglio direttamente, come CSV dall'indirizzo gviz. Vedi "Foglio Google".
 - L'utente assegna a mano la fascia di ogni comune nel foglio. Nessuna regola automatica.
 - Le domande usano comuni di tre province: Ascoli Piceno (AP), Fermo (FM), Teramo (TE).
-- Per ora la mappa non include tutta la provincia di Fermo. Include solo i 14 comuni FM elencati sotto.
+- La mappa non include tutta la provincia di Fermo. Include solo i 14 comuni FM elencati sotto.
+- I confini dei comuni FM vengono da openpolis `geojson-italy`, con la stessa proiezione di `dati/mappa.js`.
+- La banca interna di 33 domande resta. Vale per i giorni che il foglio non contiene e per la modalità illimitata.
 - Lingua dell'interfaccia: italiano. I nomi delle fasce sono in dialetto ascolano.
+
+## File del progetto
+
+- `index.html`: HTML, CSS e codice del gioco (ultimo `<script>`).
+- `font.css`: i font (Courier Prime, Special Elite, Bowlby One SC) in base64.
+- `config.js`: `FOGLIO_URL`, l'indirizzo del foglio. Nel repo punta a `esempi/foglio-esempio.csv`.
+- `dati/mappa.js`: `const MAP` con i 46 comuni AP/TE e lo sfondo.
+- `dati/comuni-extra.js`: aggiunge a `MAP.ap` i 14 comuni FM e ricalcola `MAP.apbb`. È generato: non modificarlo a mano.
+- `dati/banca.js`: `const QS` con i dati dei comuni e la banca interna di domande.
+- `strumenti/aggiungi-comuni.mjs`: genera `dati/comuni-extra.js`.
+- `esempi/spedizione-esempio.txt`: una spedizione nel testo originale dell'utente, con due correzioni confermate. Carassai è AP. Il nome corretto è "Montefalcone Appennino".
+- `esempi/foglio-esempio.csv`: la stessa spedizione nel formato del foglio, data 2026-11-19. Si può importare in Google Sheets.
+- `index.html` carica gli script in questo ordine: `dati/mappa.js`, `dati/comuni-extra.js`, `dati/banca.js`, `config.js`, gioco.
+- `dati/mappa.js` e `dati/banca.js` hanno righe molto lunghe. Leggili con uno script, non con un editor.
+- Gli script che hanno generato `dati/mappa.js` e `dati/banca.js` non sono nel repo.
+- Non esistono build, dipendenze o test. Il codice è JavaScript puro.
+
+### Rigenerare `dati/comuni-extra.js`
+
+- Comando: `node strumenti/aggiungi-comuni.mjs` dalla radice del repo. Serve Node 24 e la rete.
+- La lista dei comuni da aggiungere è la costante `COMUNI` in cima allo script.
+- Lo script scarica i confini openpolis delle tre province.
+- Lo script ricava la proiezione dai 46 comuni di `dati/mappa.js` a ogni esecuzione.
+- Lo script si ferma con un errore se il residuo massimo supera 1 unità SVG o se un nome non esiste.
 
 ## Fasce
 
-Scrivi i nomi mostrati esattamente come in tabella, con la stessa punteggiatura.
+Scrivi i nomi mostrati esattamente come in tabella, con la stessa punteggiatura e le stesse maiuscole.
 
-| Etichetta nel foglio | Indice `t` | Nome mostrato | km |
+| Colonna nel foglio | Indice `t` | Nome mostrato | km |
 |---|---|---|---|
 | Common | 0 | ngenò | 40 |
-| Uncommon | 1 | da definire | 55 |
+| Uncommon | 1 | Insolito (provvisorio) | 55 |
 | Rare | 2 | oh... | 70 |
 | Elusive | 3 | OH.... | 85 |
 | Farflung | 4 | Ess... | 100 |
 | risposta errata (Miss) | -1 | oh capo... | 0 |
 
-I km sono quelli del prototipo. L'utente non li ha cambiati.
+- I nomi sono in `TIERS` e `MISS`. I km sono quelli del prototipo.
+- Nessun CSS e nessun codice cambia maiuscole e minuscole dei nomi di fascia.
 
-## Contenuto di una spedizione nel foglio
+## Contenuto di una spedizione
 
 Una spedizione ha 5 domande. Ogni domanda ha:
 
@@ -40,70 +67,105 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 - il testo della domanda;
 - per ogni fascia, la lista dei comuni validi. Ogni comune ha la sigla della provincia: `Nome (AP)`, `Nome (FM)`, `Nome (TE)`.
 
-Esempio di una domanda:
-
-```
-3.Seleziona un comune il cui territorio è attraversato dal fiume Tronto
-Farflung: Sant'Egidio alla Vibrata (TE)
-Elusive: Maltignano (AP)
-Rare: Monsampolo del Tronto (AP), Controguerra (TE), Ancarano (TE)
-Uncommon: Monteprandone (AP), Spinetoli (AP), Colli del Tronto (AP), Martinsicuro (TE), Colonnella (TE), Acquasanta Terme (AP), Arquata del Tronto (AP)
-Common: Ascoli Piceno (AP), San Benedetto del Tronto (AP)
-```
-
-- Una spedizione completa di esempio è in `esempi/spedizione-esempio.txt`. È il testo dell'utente con due correzioni confermate: Carassai è AP, e il nome corretto è "Montefalcone Appennino".
 - Una fascia può avere più comuni. Il numero di comuni per fascia non è fisso.
-- Il foglio identifica i comuni per nome, non per codice ISTAT. Il codice deve convertire nome + sigla in codice ISTAT.
-- Il foglio non contiene spiegazioni per comune né note per domanda. Il prototipo le mostra (`a.e`, `q.note`). Il codice deve funzionare senza.
-- Un nome che non corrisponde a un comune della mappa è un errore di dati. Segnalalo. Non scartarlo in silenzio.
+- Il foglio identifica i comuni per nome, non per codice ISTAT.
+- Il foglio non contiene spiegazioni per comune né note per domanda.
+- Un nome che non corrisponde a un comune della mappa è un errore di dati. Il gioco lo segnala.
 
-## Stato attuale
+## Foglio Google
 
-- Il prototipo è un solo file HTML, `lontano.html` (303 KB). Non è ancora nel repo.
-- Il prototipo usa ancora il nome "Lontano" in: `<title>`, titolo in home, testo di condivisione, prefisso `lontano:` di `localStorage`, fascia più alta, souvenir "Lontano!".
-- Il prototipo usa i nomi di fascia Banale, Insolito, Raro, Introvabile, Lontano, Mancato. Vanno sostituiti con la tabella sopra.
-- Il prototipo non legge alcun foglio. Sceglie 5 domande da una banca interna di 33, con una rotazione automatica.
-- La mappa del prototipo ha 46 comuni giocabili: 33 AP (codici ISTAT `044…`) e 13 TE (`067…`). Non ha comuni FM.
-- Non esistono build, dipendenze, test o comandi. Il codice è JavaScript puro in un tag `<script>`.
+- Indirizzo da mettere in `config.js`: `https://docs.google.com/spreadsheets/d/<ID>/gviz/tq?tqx=out:csv&headers=1&sheet=<scheda>`.
+- Il foglio deve essere condiviso con "chiunque abbia il link". Così l'indirizzo gviz risponde con CSV e con `Access-Control-Allow-Origin`.
+- Riga di intestazione: `data,n,domanda,Farflung,Elusive,Rare,Uncommon,Common`.
+- Il gioco riconosce le colonne per nome, senza distinzione tra maiuscole e minuscole. L'ordine delle colonne è libero.
+- La colonna `n` è facoltativa. Ordina le domande del giorno. Senza `n` vale l'ordine delle righe.
+- Una riga per domanda. 5 righe per giorno.
+- `data` è in formato `AAAA-MM-GG` o `GG/MM/AAAA`. Se la cella è vuota vale la data della riga sopra.
+- Il valore della cella `data` mostrato nel foglio deve avere uno di questi due formati.
+- Ogni cella di fascia contiene comuni separati da virgola, nel formato `Nome (SIGLA)`.
+- Il confronto dei nomi ignora maiuscole, spazi in più e tipo di apostrofo.
+- Il codice ISTAT viene dai nomi di `MAP.ap`: prefisso `044` = AP, `109` = FM, `067` = TE.
+- Un giorno è valido se ha 5 domande, ognuna con testo e almeno un comune riconosciuto.
+- Errori segnalati: colonne mancanti, data non valida, nome non riconosciuto, comune in due fasce della stessa domanda, giorno senza 5 domande, domanda senza testo o senza comuni.
+- Un comune in due fasce resta nella prima fascia letta, nell'ordine Farflung → Common.
+- Gli errori vanno in `console.warn`. Il giocatore non vede messaggi.
+- Aprendo la pagina con `?verifica` un modal mostra la fonte, i giorni validi e gli errori.
+- Le domande del foglio hanno id `AAAA-MM-GG/n` (n = posizione da 1 a 5) e vanno in `QBY`. Le risposte sono `{t}`, senza `e`. Le domande non hanno `note`.
+- Il gioco legge il foglio una volta all'apertura della pagina, con un limite di 4 secondi.
+
+## Scelta delle domande del giorno
+
+- La chiave del giorno è la data locale di `dateOf(i)` in formato `AAAA-MM-GG`.
+- Se il foglio ha quel giorno valido, il gioco usa le sue 5 domande.
+- Altrimenti il gioco usa la rotazione della banca interna (`dailyQuestions(i)`). Vale anche per foglio irraggiungibile o lento.
+- Una partita iniziata riprende con le domande salvate in `qs`, anche se nel frattempo il foglio è cambiato.
+- Se le domande salvate di un giorno del foglio non sono più disponibili, il gioco torna alla home con un avviso.
+- La modalità illimitata usa solo la banca interna (`randomQuestions`).
+
+## Regola dei 46 comuni
+
+- Le 33 domande della banca interna valgono solo per i 46 comuni di `QS.comuni` (33 AP, 13 TE).
+- Con una domanda della banca i 14 comuni FM restano disegnati ma sono spenti e non selezionabili.
+- Con una domanda del foglio tutti i 60 comuni sono selezionabili.
+- La regola vale solo per la mappa della partita. Home, campo e "Impara i comuni" mostrano tutti i comuni normali.
+- In "Impara i comuni" un comune senza dati in `QS.comuni` mostra solo il nome.
 
 ## Regole di gioco
 
 - Per ogni domanda il giocatore punta un comune sulla mappa e conferma.
 - Un comune valido dà i km della sua fascia. Un comune non valido dà 0 km.
 - Il massimo è 500 km.
-- Tappe del viaggio: Campo base 0, Il Tronto 1, Le Colline 100, La Laga 200, I Sibillini 300, Il Vettore 400.
-- Modalità del prototipo: quotidiana, archivio dei giorni passati, illimitata (5 domande casuali), "Impara i comuni".
+- I km spostano uno sprite lungo un percorso disegnato (pannello "journey").
+- Modalità: quotidiana, archivio dei giorni passati, illimitata (5 domande casuali), "Impara i comuni".
 - La spedizione #1 è il 18 novembre 2026 (`EPOCH`). Il giorno cambia alla mezzanotte del dispositivo.
+- La scheda risposta e la schermata campo omettono la spiegazione e la nota quando mancano.
 
-## Dati incorporati nel prototipo
+## Percorso del viaggio
 
-- `MAP`: `W`, `H`, `ap` (46 comuni: `id`, `nome`, `d`, `bb`, `pin`), `bg` (373 tracciati di sfondo), `sea`, `apbb`.
-- `QS.comuni`: per codice ISTAT, `nome`, `pop`, `km2`, `alt`.
+| Tappa | km |
+|---|---|
+| Piazza del Popolo | 0 |
+| San Francesco | 1 |
+| Il Tronto | 100 |
+| Lago di Pilato | 400 |
+| Ghiacci del Vettore | 500 |
+
+- Le tappe sono in `STOPS`. Il tracciato è `JPATH`, le etichette sono `JLAB`, il disegno è `journeySVG()`.
+- Lo sprite si muove in proporzione a km/500 lungo `JPATH`.
+- Il disegno ha il fiume Tronto al 20% del tracciato e il Lago di Pilato con il chirocefalo all'80%.
+- Il nome della tappa compare anche nell'intestazione, nel testo di condivisione e nel testo "Come si gioca".
+
+## Dati
+
+- `MAP`: `W`, `H`, `ap` (60 comuni: `id`, `nome`, `d`, `bb`, `pin`), `bg` (373 tracciati di sfondo), `sea`, `apbb`.
+- `QS.comuni`: per codice ISTAT, `nome`, `pop`, `km2`, `alt`. Contiene solo i 46 comuni AP/TE.
 - `QS.domande`: 33 domande. Ogni domanda ha `id`, `q` (testo), `note`, `a`.
 - `a` è una mappa codice ISTAT → `{t, e}`. `t` è la fascia 0-4. `e` è la spiegazione mostrata dopo la risposta.
 - L'id di un comune è sempre il codice ISTAT a 6 cifre, come stringa.
-- I font (Courier Prime, Special Elite, Bowlby One SC) sono in base64 dentro il CSS.
 
 ## Stato nel browser (`localStorage`)
 
-- `day:<indice>` → `{res, km}`. Ogni elemento di `res` è `{q, c, t}`: id domanda, id comune, fascia (-1 se errata).
+Tutte le chiavi hanno il prefisso `lenta:`.
+
+- `day:<indice>` → `{res, km, qs}`. Ogni elemento di `res` è `{q, c, t}`: id domanda, id comune, fascia (-1 se errata). `qs` sono gli id delle 5 domande.
+- Un `day:<indice>` senza `qs` è un salvataggio vecchio. Il gioco lo riapre con la banca interna.
 - `stats` → `{passport, souv, last, streak, best}`.
 - `muted` → booleano.
 
 ## Vincoli da rispettare
 
-- I tracciati `MAP.bg` hanno solo la forma (`d`). Non hanno nome né codice. I comuni FM non si possono rendere giocabili con i dati attuali: servono nuovi confini.
-- I 14 comuni FM da aggiungere sono: Fermo, Pedaso, Porto San Giorgio, Monte San Pietrangeli, Magliano di Tenna, Montegranaro, Montegiorgio, Sant'Elpidio a Mare, Amandola, Montelparo, Santa Vittoria in Matenano, Smerillo, Montefalcone Appennino, Montefortino.
-- Con questi comuni la mappa avrà 60 comuni giocabili: 33 AP, 13 TE, 14 FM.
-- I risultati salvati contengono gli id delle domande. Archivio e schermata "campo" funzionano solo se i dati dei giorni passati restano leggibili.
-- Il souvenir "Lupo di mare" legge `QBY.mare`. Si rompe se la domanda con id `mare` non esiste.
-- Il testo "Come si gioca" contiene numeri, nomi di fascia e fonti scritti a mano. Aggiornalo quando cambiano i dati.
+- I tracciati `MAP.bg` hanno solo la forma (`d`). Non hanno nome né codice.
+- I 14 comuni FM sulla mappa sono: Fermo, Pedaso, Porto San Giorgio, Monte San Pietrangeli, Magliano di Tenna, Montegranaro, Montegiorgio, Sant'Elpidio a Mare, Amandola, Montelparo, Santa Vittoria in Matenano, Smerillo, Montefalcone Appennino, Montefortino.
+- La mappa ha 60 comuni giocabili: 33 AP, 13 TE, 14 FM.
+- I risultati salvati contengono gli id delle domande. L'archivio riapre un giorno del foglio solo se il foglio contiene ancora quel giorno.
+- Il souvenir "Lupo di mare" legge `QBY.mare`. Si rompe se la domanda con id `mare` sparisce dalla banca.
+- Il testo "Come si gioca" (`HOWTO`) contiene numeri e fonti scritti a mano. Aggiornalo quando cambiano i dati.
 - La mappa mostra l'attribuzione "Confini © ISTAT / openpolis". Non rimuoverla.
 - Tutte le risposte sono leggibili nel browser. Con un gioco solo frontend non si possono nascondere.
-- Il browser legge il foglio direttamente. Chi conosce l'indirizzo del foglio può leggere anche i giorni futuri.
+- Chi conosce l'indirizzo del foglio può leggere anche i giorni futuri.
 - Non mettere chiavi API o credenziali nel codice o nel repo.
 
-## Fonti dei dati del prototipo
+## Fonti dei dati
 
 - Confini: ISTAT / openpolis.
 - Popolazione, superficie, altitudine: ISTAT al 1/1/2026.
@@ -114,15 +176,8 @@ Common: Ascoli Piceno (AP), San Benedetto del Tronto (AP)
 
 Chiedi all'utente prima di implementare la parte collegata. Non scegliere una risposta plausibile.
 
-1. Nome mostrato per la fascia Uncommon.
-2. Fonte dei confini per i 14 comuni FM. Devono avere la stessa proiezione e scala di `MAP.ap`.
-3. Disposizione del foglio: righe, colonne, formato della data. Il contenuto è definito sopra.
-4. Metodo di lettura del foglio dal browser (foglio pubblicato come CSV o altro). Verifica la documentazione Google e il comportamento CORS prima di scegliere.
-5. Comportamento se un giorno manca nel foglio o una riga non è valida.
-6. Destino della banca interna di 33 domande e origine delle domande nella modalità illimitata.
-7. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i comuni nuovi.
-8. Web server sul PC Windows 11, dominio, HTTPS, metodo di deploy.
-9. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
-10. Struttura dei file: file unico o `index.html` + CSS + JS + dati + font separati.
-11. Nuovo nome del souvenir "Lontano!".
-12. Esistenza degli script che hanno generato `MAP` e `QS`. Oggi l'HTML è l'unica fonte nota.
+1. Nome mostrato per la fascia Uncommon. Oggi è `Insolito`, provvisorio.
+2. Web server sul PC Windows 11, dominio, HTTPS, metodo di deploy.
+3. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
+4. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
+5. Etichette del percorso illeggibili su schermo stretto.

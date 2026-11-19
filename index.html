@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Lentà — La spedizione quotidiana nel Piceno</title>
+<link rel="stylesheet" href="font.css">
+<style>
+:root{
+  --paper:#f4ead0; --paper2:#efe2c2; --ink:#2a1f17; --ink2:#5b4a3a; --red:#b8322a; --navy:#22344a;
+  --sea:#a8c2c9; --sea2:#97b4bc; --land:#f0e1ba; --dim:#c9ccb3; --bgland:#d9d3b6;
+  --t0:#9a8b6e; --t1:#3d8c58; --t2:#c8553d; --t3:#7656d1; --t4:#d4a017; --miss:#4a6fa5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#3a2c20;color:var(--ink);font-family:'Courier Prime',ui-monospace,monospace}
+button{font-family:inherit;color:inherit;cursor:pointer;background:none;border:0}
+#app{position:relative;max-width:1180px;height:100dvh;margin:0 auto;background:var(--paper);
+  border:6px solid #2a1f17;box-shadow:inset 0 0 0 2px #c9b88f;display:flex;flex-direction:column;overflow:hidden;
+  background-image:radial-gradient(rgba(90,70,40,.06) 1px,transparent 1.2px);background-size:7px 7px}
+/* header */
+header{display:flex;align-items:stretch;border-bottom:2px solid var(--ink);min-height:56px;flex:none;background:var(--paper)}
+header .ib{width:52px;display:grid;place-items:center;font-size:22px;border-right:2px solid var(--ink)}
+header .ib:last-child{border-right:0;border-left:2px solid var(--ink)}
+header .lbl{flex:1;padding:6px 12px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+header .lbl small{font-size:11px;letter-spacing:.14em;color:var(--ink2);text-transform:uppercase}
+header .lbl b{font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header .lbl b i{font-style:normal;font-size:12px;color:var(--ink2)}
+header .prog{display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:6px 12px;gap:3px}
+.bars{display:flex;gap:3px;align-items:flex-end;height:16px}
+.bars span{width:8px;height:14px;border:1.5px solid #b9a98a;border-radius:1px}
+.bars span.on{border-color:transparent}
+.bars span.cur{border-color:var(--red)}
+.where{font-size:11px;letter-spacing:.14em;color:var(--red);text-transform:uppercase;font-weight:700}
+/* screens */
+main{flex:1;position:relative;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.on{display:flex}
+/* home */
+#home .mapwrap{flex:1}
+.titlecard{position:absolute;left:50%;top:22px;transform:translateX(-50%);background:var(--paper);border:2px solid var(--ink);
+  box-shadow:5px 5px 0 var(--ink);padding:16px 34px 12px;text-align:center;z-index:5;max-width:92%}
+.titlecard h1{font-family:'Bowlby One SC',serif;font-size:clamp(34px,7vw,58px);letter-spacing:.06em;color:var(--ink);text-shadow:3px 3px 0 var(--red);line-height:1}
+.titlecard h2{font-size:13px;letter-spacing:.24em;color:var(--red);margin:8px 0 6px;display:flex;align-items:center;gap:10px;justify-content:center}
+.titlecard h2:before,.titlecard h2:after{content:"";height:5px;width:46px;border-top:1px solid var(--red);border-bottom:1px solid var(--red)}
+.titlecard p{font-size:12.5px;color:var(--ink2)}
+.homebar{flex:none;border-top:2px solid var(--ink);padding:12px;display:grid;gap:10px;grid-template-columns:1fr 1fr;background:var(--paper)}
+.homebar .how{grid-column:1/3;justify-self:center;border:1.5px solid var(--ink);padding:6px 18px;font-size:12px;letter-spacing:.14em;box-shadow:3px 3px 0 rgba(0,0,0,.25);background:var(--paper)}
+.homebar .how b{color:var(--red)}
+.bigbtn{grid-column:1/3;background:var(--navy);color:#f4ead0;font-size:19px;letter-spacing:.12em;padding:16px;border:3px double #c9b88f;outline:2px solid var(--navy);text-transform:uppercase;position:relative}
+.bigbtn .no{position:absolute;right:6px;top:50%;transform:translateY(-50%) rotate(-90deg);font-size:11px;color:#d9c79c}
+.smallbtn{border:2px solid var(--ink);padding:12px;font-family:'Special Elite',monospace;font-size:17px;letter-spacing:.06em;background:var(--paper2);box-shadow:3px 3px 0 rgba(0,0,0,.2);text-transform:uppercase}
+.smallbtn:hover,.bigbtn:hover{filter:brightness(1.08)}
+/* map */
+.mapwrap{position:relative;min-height:0;overflow:hidden;background:var(--sea);border-bottom:2px solid var(--ink);touch-action:none}
+.mapwrap svg{width:100%;height:100%;display:block;cursor:grab}
+.mapwrap svg:active{cursor:grabbing}
+.cm{fill:var(--land);transition:fill .5s}
+.cm:hover{fill:#e8d39f}
+.cm.sel{fill:#e5cf98}
+.cm.off{fill:var(--dim)}
+.dimmed .cm{fill:var(--dim)}
+.dimmed .cm.hit{fill:var(--land)}
+.cmo{fill:none;stroke:var(--ink);stroke-width:1.1;vector-effect:non-scaling-stroke;pointer-events:none}
+.outerline{fill:none;stroke:var(--ink);stroke-width:4.5;vector-effect:non-scaling-stroke}
+.bgp{fill:var(--bgland);stroke:#9a917a;stroke-width:.6;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+.hl{fill:none;stroke-width:4;vector-effect:non-scaling-stroke;stroke-linejoin:round;pointer-events:none}
+.hlglow{fill:none;stroke-width:12;opacity:.35;vector-effect:non-scaling-stroke;stroke-linejoin:round;pointer-events:none}
+.lab{font-family:'Courier Prime';font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:3px;text-anchor:middle;pointer-events:none}
+.zoomctl{position:absolute;left:10px;bottom:12px;display:flex;flex-direction:column;gap:6px;z-index:4}
+.zoomctl button{width:34px;height:34px;border:1.5px solid var(--ink);background:var(--paper);font-size:18px;box-shadow:2px 2px 0 rgba(0,0,0,.25)}
+.revealing .zoomctl{display:none}
+.compass{position:absolute;right:12px;bottom:12px;width:48px;height:48px;z-index:3;pointer-events:none;opacity:.85}
+.attr{position:absolute;left:52px;bottom:6px;font-size:9px;color:#3b4c52;z-index:3}
+/* play */
+.prompt{flex:none;padding:10px 16px 12px;border-bottom:2px solid var(--ink)}
+.prompt small{font-size:11px;letter-spacing:.14em;color:var(--red);font-weight:700}
+.prompt h3{font-size:clamp(18px,2.6vw,25px);font-weight:700;line-height:1.25;margin-top:4px}
+.playbody{flex:1;display:flex;min-height:0}
+.playbody .mapwrap{flex:1;border-bottom:0}
+.side{width:0;overflow:hidden;border-left:0 solid var(--ink);display:flex;flex-direction:column;transition:width .5s;background:var(--paper)}
+.side.open{width:38%;border-left-width:2px}
+.side .inner{padding:14px;display:flex;flex-direction:column;gap:12px;height:100%;min-width:300px;overflow:auto}
+.footbar{flex:none;border-top:2px solid var(--ink);display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--paper)}
+.footbar .pinname{flex:1;font-size:13px;min-width:0}
+.footbar .pinname span{font-size:15px;font-weight:700;margin-left:6px}
+.keys{font-size:11px;color:var(--ink2);display:flex;gap:5px;align-items:center}
+.keys kbd{border:1px solid var(--ink2);padding:1px 4px;font-family:inherit;font-size:10px}
+.drop{border:2px solid var(--ink);padding:14px 10px;width:min(280px,45vw);font-size:17px;letter-spacing:.12em;background:var(--paper);text-transform:uppercase;font-weight:700}
+.drop.ready{background:var(--red);color:#f4ead0;border-color:#7d1d17;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.drop:disabled{opacity:.55;cursor:default}
+.nextbtn{border:2px solid var(--ink);padding:14px;font-size:17px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;background:var(--ink);color:var(--paper);margin-top:auto}
+/* result card */
+.rcard{position:absolute;left:5%;bottom:22px;z-index:6;background:var(--paper);border:2px solid var(--ink);outline:4px solid var(--paper);box-shadow:0 0 0 6px var(--ink2);
+  padding:12px 22px 14px;min-width:220px;text-align:center;display:none}
+.rcard.on{display:block;animation:pop .35s ease-out}
+@keyframes pop{from{transform:translateY(20px);opacity:0}}
+.rcard small{font-size:11px;letter-spacing:.14em;color:var(--red);font-weight:700}
+.rcard .nm{font-family:'Bowlby One SC';font-size:clamp(22px,3.4vw,30px);letter-spacing:.03em;color:var(--ink);text-shadow:2px 2px 0 rgba(184,50,42,.55);margin:6px 0 10px;min-height:1.2em;text-transform:uppercase;line-height:1.05}
+.rcard .row{display:flex;align-items:center;gap:12px;justify-content:center}
+.stamp{font-family:'Special Elite';font-size:17px;letter-spacing:.08em;border:2.5px solid currentColor;padding:4px 10px;transform:rotate(-4deg);min-width:120px;display:inline-block}
+.stamp.empty{border-style:dashed;color:#b9a98a}
+.stamp.slam{animation:slam .35s cubic-bezier(.2,1.8,.4,1)}
+@keyframes slam{from{transform:rotate(-4deg) scale(2.2);opacity:0}}
+.km{font-size:18px;font-weight:700;min-width:80px;text-align:left}
+.newloc{position:absolute;right:-26px;top:-14px;font-family:'Special Elite';color:var(--red);border:1.5px solid var(--red);padding:2px 8px;font-size:11px;letter-spacing:.1em;transform:rotate(12deg);background:var(--paper);display:none}
+.newloc.on{display:block;animation:slam .4s}
+/* journey */
+.journey{background:#e9dcb6;border:2px solid #cdbb8f;padding:8px;align-self:center;width:min(240px,100%);box-shadow:inset 0 0 18px rgba(120,90,40,.25)}
+.journey svg{width:100%;display:block}
+.excard{border:2px solid var(--ink);outline:3px solid var(--paper);box-shadow:0 0 0 4px var(--ink2);padding:12px;margin:4px}
+.excard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.excard .q{font-weight:700;margin:8px 0 4px}
+.excard p{font-size:13px;color:var(--ink2);line-height:1.45}
+/* camp */
+#camp .playbody .side{width:42%;border-left-width:2px}
+.share{border:2px solid var(--ink);padding:10px;display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
+.share ol{list-style:none;font-size:12px;display:flex;flex-direction:column;gap:3px}
+.share ol li{display:flex;gap:6px;align-items:center}
+.share ol li em{font-style:normal;font-family:'Special Elite';border:1.5px solid currentColor;padding:0 5px;font-size:11px}
+.badge{border:2px solid var(--ink);background:linear-gradient(#dcebe9,#efe2c2);text-align:center;padding:8px 10px}
+.badge b{display:block;font-family:'Bowlby One SC';font-size:26px}
+.badge small{font-size:10px;letter-spacing:.12em;color:var(--red);font-weight:700;text-transform:uppercase}
+.sharebtn{grid-column:1/3;background:var(--red);color:var(--paper);padding:12px;font-size:17px;letter-spacing:.14em;font-weight:700;border:2px solid #7d1d17}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{border:2px solid var(--ink);padding:8px 4px;text-align:center;font-size:12px;position:relative}
+.stats b{display:block;font-size:12px;letter-spacing:.1em;margin-bottom:4px}
+.stats .nw{position:absolute;right:-6px;top:-10px;color:var(--red);border:1px solid var(--red);font-size:9px;padding:1px 4px;background:var(--paper);transform:rotate(8deg);font-family:'Special Elite'}
+.answers h4{font-size:12px;letter-spacing:.16em;color:var(--ink2);border-bottom:1px dashed var(--ink2);padding-bottom:4px;margin:6px 0}
+.ans{border-bottom:1px solid #d6c79f;padding:8px 0}
+.ans .qq{font-size:12.5px}
+.ans .me{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.ans .me .stamp{font-size:12px;min-width:0;padding:1px 6px}
+.ans .me b{font-size:15px}
+.ans .tog{margin-left:auto;color:var(--red);font-size:11px;letter-spacing:.08em;font-weight:700}
+.tiers{display:none;margin-top:8px;font-size:13px}
+.tiers.on{display:block}
+.tiers .tr{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.1em;font-weight:700;margin-top:8px}
+.tiers .tr i{display:inline-block;width:12px;height:12px;border:1.5px solid var(--ink);vertical-align:-2px;margin-left:6px}
+.tiers .nn{margin-top:3px}
+.tiers .nn button{text-decoration:underline dotted;padding:0 2px}
+.tiers .nn button.mine{background:var(--ink);color:var(--paper);text-decoration:none;padding:2px 6px}
+.tiers p{font-size:12px;color:var(--ink2);margin-top:8px}
+.countdown{font-size:12px;text-align:center;color:var(--ink2)}
+.countdown b{color:var(--red)}
+.homebtn{border:2px solid var(--ink);padding:12px;font-size:16px;letter-spacing:.12em;font-weight:700;text-transform:uppercase}
+/* modal */
+.modal{position:absolute;inset:0;background:rgba(42,31,23,.55);z-index:50;display:none;place-items:center;padding:16px}
+.modal.on{display:grid}
+.modal .box{background:var(--paper);border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink);max-width:560px;width:100%;max-height:90%;overflow:auto;padding:20px 22px;position:relative}
+.modal h2{font-family:'Bowlby One SC';font-size:26px;margin-bottom:12px;letter-spacing:.03em}
+.modal p,.modal li{font-size:14px;line-height:1.5;margin-bottom:8px}
+.modal ul{padding-left:18px}
+.modal .x{position:absolute;right:10px;top:8px;font-size:22px}
+.tierlist{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:10px 0 14px;align-items:center}
+.menu a,.menu button{display:block;width:100%;text-align:left;padding:12px 6px;border-bottom:1px dashed var(--ink2);font-size:16px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.arch{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.arch button{border:2px solid var(--ink);padding:8px 4px;font-size:12px;background:var(--paper2)}
+.arch button b{display:block;font-size:16px}
+.arch button.done{background:#dfe8d5}
+.toast{position:absolute;left:50%;top:70px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;z-index:60;font-size:14px;display:none}
+.toast.on{display:block;animation:pop .3s}
+@media (max-width:760px){
+  .playbody{flex-direction:column}
+  .side{width:auto!important;height:0;border-left:0!important;border-top:0 solid var(--ink);transition:height .5s}
+  .side.open{height:56%;border-top-width:2px}
+  #camp .playbody .side{height:64%;border-top-width:2px}
+  .side .inner{min-width:0;padding:10px;gap:10px}
+  .journey{width:96px}
+  .nextbtn{position:sticky;bottom:0}
+  .rcard{left:50%;transform:translateX(-50%);bottom:auto;top:10px;padding:8px 14px 10px;min-width:200px}
+  .rcard.on{animation:none}
+  .keys,.bigbtn .no{display:none}
+  .footbar .pinname{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="ib" id="menuBtn" aria-label="Menu">☰</button>
+    <div class="lbl"><small id="hdSmall">Spedizione</small><b id="hdBig">—</b></div>
+    <div class="prog" id="hdProg" style="display:none"><div class="bars" id="bars"></div><div class="where" id="where">Piazza del Popolo</div></div>
+    <button class="ib" id="muteBtn" aria-label="Audio">🔊</button>
+  </header>
+  <main>
+    <section class="screen on" id="home">
+      <div class="mapwrap" id="homeMap"></div>
+      <div class="titlecard"><h1>LENTÀ</h1><h2>LA SPEDIZIONE QUOTIDIANA</h2><p>Piceno, Fermano e Val Vibrata. Cinque domande. Punta un comune. Le risposte rare vanno più lontano.</p></div>
+      <div class="homebar">
+        <button class="how" id="howBtn"><b>?</b> COME SI GIOCA</button>
+        <button class="bigbtn" id="playBtn">Gioca la spedizione di oggi<span class="no" id="homeNo"></span></button>
+        <button class="smallbtn" id="archBtn">📅 Archivio</button>
+        <button class="smallbtn" id="learnBtn">Impara i comuni</button>
+      </div>
+    </section>
+
+    <section class="screen" id="play">
+      <div class="prompt"><small id="pNum">DOMANDA 1 DI 5</small><h3 id="pText"></h3></div>
+      <div class="playbody">
+        <div class="mapwrap" id="playMap">
+          <div class="rcard" id="rcard"><div class="newloc" id="newloc">NUOVA TAPPA</div><small id="rNum"></small><div class="nm" id="rName"></div>
+            <div class="row"><span class="stamp empty" id="rStamp">&nbsp;</span><span class="km" id="rKm">··· km</span></div></div>
+        </div>
+        <aside class="side" id="side"><div class="inner">
+          <div class="journey" id="journey"></div>
+          <div class="excard" id="excard"></div>
+          <button class="nextbtn" id="nextBtn">Prossima domanda ▲</button>
+        </div></aside>
+      </div>
+      <div class="footbar" id="footbar">
+        <div class="pinname">PUNTA<span id="pinName">—</span></div>
+        <div class="keys">clic = scegli · <kbd>SPAZIO</kbd><kbd>INVIO</kbd> = conferma</div>
+        <button class="drop" id="dropBtn" disabled>Pianta la bandierina</button>
+      </div>
+    </section>
+
+    <section class="screen" id="camp">
+      <div class="playbody">
+        <div class="mapwrap" id="campMap"></div>
+        <aside class="side open" id="campSide"><div class="inner" id="campInner"></div></aside>
+      </div>
+    </section>
+
+    <section class="screen" id="learn">
+      <div class="prompt"><small>IMPARA I COMUNI</small><h3>Tocca un comune per vedere nome e dati</h3></div>
+      <div class="mapwrap" id="learnMap" style="flex:1"></div>
+      <div class="footbar"><div class="pinname" id="learnInfo">—</div><button class="drop" id="learnBack">Torna alla home</button></div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal"><div class="box"><button class="x" id="modalX">×</button><div id="modalBody"></div></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="dati/mappa.js"></script>
+<script src="dati/comuni-extra.js"></script>
+<script src="dati/banca.js"></script>
+<script src="config.js"></script>
+<script>
+const TIERS=[{n:'ngenò',km:40,c:'var(--t0)',hex:'#9a8b6e',e:'🟫'},{n:'Insolito',km:55,c:'var(--t1)',hex:'#3d8c58',e:'🟩'},{n:'oh...',km:70,c:'var(--t2)',hex:'#c8553d',e:'🟥'},{n:'OH....',km:85,c:'var(--t3)',hex:'#7656d1',e:'🟪'},{n:'Ess...',km:100,c:'var(--t4)',hex:'#d4a017',e:'🟨'}];
+const MISS={n:'oh capo...',km:0,c:'var(--miss)',hex:'#4a6fa5',e:'🟦'};
+const STOPS=[{km:0,n:'Piazza del Popolo'},{km:1,n:'San Francesco'},{km:100,n:'Il Tronto'},{km:400,n:'Lago di Pilato'},{km:500,n:'Ghiacci del Vettore'}];
+const EPOCH=new Date(2026,10,18); // spedizione #1
+const COM={}; MAP.ap.forEach(c=>COM[c.id]=c);
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('lenta:'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('lenta:'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- audio ---------- */
+let AC=null, muted=store.get('muted',false);
+function snd(type){ if(muted) return; try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const t=AC.currentTime,o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  const P={tick:[1800,.02,.05,'square'],stamp:[90,.25,.5,'triangle'],coin:[1320,.06,.08,'square'],chime:[880,.5,.15,'sine'],pin:[420,.12,.18,'triangle'],miss:[150,.3,.3,'sawtooth']}[type];
+  o.type=P[3];o.frequency.setValueAtTime(P[0],t);if(type==='chime')o.frequency.setValueAtTime(1320,t+.12);if(type==='pin')o.frequency.exponentialRampToValueAtTime(160,t+.12);
+  g.gain.setValueAtTime(P[2],t);g.gain.exponentialRampToValueAtTime(.0001,t+P[1]);o.start(t);o.stop(t+P[1]+.02);}catch(e){} }
+function setMute(){ $('muteBtn').textContent=muted?'🔇':'🔊'; }
+$('muteBtn').onclick=()=>{muted=!muted;store.set('muted',muted);setMute()}; setMute();
+
+/* ---------- dates & daily ---------- */
+function dayIndex(d=new Date()){ const a=new Date(d.getFullYear(),d.getMonth(),d.getDate()); return Math.round((a-EPOCH)/864e5); }
+function dateOf(i){ const d=new Date(EPOCH); d.setDate(d.getDate()+i); return d; }
+const MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function fmtDate(d){ return d.getDate()+' '+MESI[d.getMonth()]; }
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function shuffled(arr,seed){ const r=rng(seed),a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+const QIDS=QS.domande.map(q=>q.id), QBY={}; QS.domande.forEach(q=>QBY[q.id]=q);
+function dailyQuestions(i){
+  const N=QIDS.length, out=[]; let pos=i*5;
+  while(out.length<5){ const cyc=Math.floor(pos/N), q=shuffled(QIDS,1000+cyc*7919)[pos%N]; if(!out.includes(q)) out.push(q); pos++; }
+  return out;
+}
+function randomQuestions(){ return shuffled(QIDS,Math.floor(Math.random()*1e9)).slice(0,5); }
+
+/* ---------- foglio ---------- */
+const BANCA=new Set(Object.keys(QS.comuni)); // le domande della banca valgono solo per questi comuni
+const FASCE={farflung:4,elusive:3,rare:2,uncommon:1,common:0}, SIGLA={'044':'AP','109':'FM','067':'TE'};
+const norm=s=>s.toLowerCase().replace(/[’‘`´ʼ]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();
+const nomeKey=s=>norm(s).replace(/\s*\(\s*(\w+)\s*\)$/,' ($1)');
+const NOMI={}; MAP.ap.forEach(c=>NOMI[nomeKey(c.nome+' ('+SIGLA[c.id.slice(0,3)]+')')]=c.id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+function ymd(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }
+function parseData(s){ let m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s), y, mo, g; if(m) [,y,mo,g]=m; else if(m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s)) [,g,mo,y]=m; else return null;
+  const d=new Date(y,mo-1,g); return d.getMonth()===mo-1&&d.getDate()===+g?ymd(d):null; }
+function parseCSV(s){ const rows=[]; let row=[], f='', q=false; s=s.replace(/^﻿/,'');
+  for(let i=0;i<s.length;i++){ const ch=s[i];
+    if(q){ if(ch!=='"') f+=ch; else if(s[i+1]==='"'){ f+='"'; i++; } else q=false; }
+    else if(ch==='"') q=true;
+    else if(ch===','){ row.push(f); f=''; }
+    else if(ch==='\n'||ch==='\r'){ if(ch==='\r'&&s[i+1]==='\n') i++; row.push(f); rows.push(row); row=[]; f=''; }
+    else f+=ch; }
+  if(f||row.length){ row.push(f); rows.push(row); } return rows; }
+const FOGLIO={giorni:{},errori:[]};
+function leggiFoglio(txt){ const rows=parseCSV(txt), err=m=>FOGLIO.errori.push(m), h=(rows[0]||[]).map(norm), col={};
+  ['data','n','domanda',...Object.keys(FASCE)].forEach(k=>col[k]=h.indexOf(k));
+  const manca=Object.keys(col).filter(k=>k!=='n'&&col[k]<0); if(manca.length) return err('Mancano le colonne: '+manca.join(', '));
+  const giorni={}; let cur=null; // cur=false: data della riga sopra non valida, errore già segnalato
+  rows.slice(1).forEach((r,k)=>{ const riga=k+2, v=c=>(col[c]<0?'':r[col[c]]||'').trim(); if(!r.some(c=>c.trim())) return;
+    if(v('data')){ cur=parseData(v('data'))||false; if(!cur) err(`Riga ${riga}: data non valida "${v('data')}"`); } else if(cur===null) err(`Riga ${riga}: manca la data`);
+    if(!cur) return;
+    const a={}; Object.keys(FASCE).forEach(f=>v(f).split(',').map(s=>s.trim()).filter(Boolean).forEach(s=>{ const id=NOMI[nomeKey(s)];
+      if(!id) err(`Riga ${riga}: comune non riconosciuto "${s}"`);
+      else if(!a[id]) a[id]={t:FASCE[f]};
+      else if(a[id].t!==FASCE[f]) err(`Riga ${riga}: ${COM[id].nome} è in due fasce`); }));
+    (giorni[cur]=giorni[cur]||[]).push({riga,n:parseFloat(v('n')),q:v('domanda'),a}); });
+  const ord=x=>isNaN(x.n)?1e9:x.n;
+  Object.keys(giorni).sort().forEach(g=>{ const qs=giorni[g].sort((x,y)=>ord(x)-ord(y)); let ok=qs.length===5;
+    if(!ok) err(`Giorno ${g}: ${qs.length} domande invece di 5`);
+    qs.forEach(q=>{ if(!q.q){ ok=false; err(`Riga ${q.riga}: manca il testo della domanda`); } if(!Object.keys(q.a).length){ ok=false; err(`Riga ${q.riga}: nessun comune riconosciuto`); } });
+    if(ok) FOGLIO.giorni[g]=qs.map((q,k)=>{ const id=g+'/'+(k+1); QBY[id]={id,q:q.q,a:q.a}; return id; }); });
+}
+const FOGLIO_PRONTO=(async()=>{ const ctl=new AbortController(), tm=setTimeout(()=>ctl.abort(),4000); let txt=null;
+  try{ const r=await fetch(FOGLIO_URL,{signal:ctl.signal,cache:'no-cache'}); if(!r.ok) throw new Error('HTTP '+r.status); txt=await r.text(); }
+  catch(e){ FOGLIO.errori.push('Foglio non raggiungibile: '+(e.name==='AbortError'?'nessuna risposta in 4 s':e.message)); }
+  clearTimeout(tm); if(txt!==null) leggiFoglio(txt);
+  FOGLIO.errori.forEach(m=>console.warn('Lentà:',m));
+  if(new URLSearchParams(location.search).has('verifica')) openModal(`<h2>Verifica foglio</h2><p style="word-break:break-all">Fonte: ${esc(FOGLIO_URL)}</p><p>Giorni validi: ${Object.keys(FOGLIO.giorni).join(', ')||'nessuno'}</p>`+
+    (FOGLIO.errori.length?`<p>Errori (${FOGLIO.errori.length}):</p><ul>${FOGLIO.errori.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:'<p>Nessun errore.</p>'));
+})();
+
+/* ---------- map ---------- */
+const NS='http://www.w3.org/2000/svg';
+function mix(hex,a){ const h=n=>parseInt(hex.slice(n,n+2),16), L=[240,225,186]; return `rgb(${[1,3,5].map((n,i)=>Math.round(L[i]+(h(n)-L[i])*a)).join(',')})`; }
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function makeMap(container,opts={}){
+  const svg=el('svg',{viewBox:`0 0 ${MAP.W} ${MAP.H}`,preserveAspectRatio:'xMidYMid meet'});
+  const defs=el('defs',{},svg);
+  const pat=el('pattern',{id:'waves'+container.id,width:46,height:22,patternUnits:'userSpaceOnUse'},defs);
+  el('path',{d:'M3 11q5-5 10 0t10 0M26 20q4-4 8 0t8 0',fill:'none',stroke:'#7f9ea6','stroke-width':.8,opacity:.7},pat);
+  const world=el('g',{},svg);
+  el('rect',{x:-500,y:-500,width:MAP.W+1000,height:MAP.H+1000,fill:'var(--bgland)'},world);
+  const bg=el('g',{},world); MAP.bg.forEach(b=>el('path',{d:b.d,class:'bgp'},bg));
+  el('path',{d:MAP.sea,fill:'var(--sea)',stroke:'#2a1f17','stroke-width':1.2,'vector-effect':'non-scaling-stroke'},world);
+  el('path',{d:MAP.sea,fill:`url(#waves${container.id})`},world);
+  const grid=el('g',{stroke:'#6f8a90','stroke-width':.5,'stroke-dasharray':'2 4',opacity:.55,'vector-effect':'non-scaling-stroke'},world);
+  for(let x=0;x<=MAP.W;x+=100) el('line',{x1:x,y1:-200,x2:x,y2:MAP.H+200,'vector-effect':'non-scaling-stroke'},grid);
+  for(let y=0;y<=MAP.H;y+=100) el('line',{x1:-200,y1:y,x2:MAP.W+200,y2:y,'vector-effect':'non-scaling-stroke'},grid);
+  const outer=el('g',{},world); MAP.ap.forEach(c=>el('path',{d:c.d,class:'outerline'},outer));
+  const fills=el('g',{class:'fills'},world), paths={};
+  MAP.ap.forEach(c=>{ const p=el('path',{d:c.d,class:'cm','data-id':c.id},fills); paths[c.id]=p; });
+  const lines=el('g',{},world); MAP.ap.forEach(c=>el('path',{d:c.d,class:'cmo'},lines));
+  const hl=el('g',{},world), labels=el('g',{},world), pins=el('g',{},world);
+  container.appendChild(svg);
+  const comp=document.createElement('div'); comp.className='compass'; comp.innerHTML='<svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="22" fill="#f4ead0" stroke="#2a1f17" stroke-width="1.5"/><circle cx="25" cy="25" r="18" fill="none" stroke="#2a1f17" stroke-width=".5"/><path d="M25 5L29 25L25 45L21 25Z" fill="#2a1f17"/><path d="M25 5L29 25L21 25Z" fill="#b8322a"/><text x="25" y="13" font-size="6" text-anchor="middle" fill="#f4ead0" font-family="monospace">N</text></svg>';
+  container.appendChild(comp);
+  const at=document.createElement('div'); at.className='attr'; at.textContent='Confini © ISTAT / openpolis'; container.appendChild(at);
+  // view state
+  let vb={x:0,y:0,w:MAP.W,h:MAP.H}, anim=null;
+  const clamp=()=>{ const r=container.getBoundingClientRect(), ar=(r.width||1)/(r.height||1);
+    const maxW=Math.min(MAP.W,MAP.H*ar); if(vb.w>maxW){ const k=maxW/vb.w; vb.x+=vb.w*(1-k)/2; vb.y+=vb.h*(1-k)/2; vb.w*=k; vb.h*=k; }
+    vb.x=Math.max(0,Math.min(MAP.W-vb.w,vb.x)); vb.y=Math.max(0,Math.min(MAP.H-vb.h,vb.y)); };
+  const apply=()=>{ clamp(); svg.setAttribute('viewBox',`${vb.x} ${vb.y} ${vb.w} ${vb.h}`); const r=svg.getBoundingClientRect(); const px=Math.max(vb.w/(r.width||800),vb.h/(r.height||600)); const k=px*1.25; pins.querySelectorAll('.pin').forEach(p=>p.setAttribute('transform',`translate(${p.dataset.x},${p.dataset.y}) scale(${k})`)); labels.querySelectorAll('text').forEach(t=>t.setAttribute('font-size',11*px)); };
+  let last=null;
+  function fit(box,pad=.18,ms=900){ last=[box,pad];
+    const r=container.getBoundingClientRect(), ar=(r.width||1)/(r.height||1);
+    let w=(box[2]-box[0])*(1+pad*2), h=(box[3]-box[1])*(1+pad*2); const cx=(box[0]+box[2])/2, cy=(box[1]+box[3])/2;
+    if(w/h<ar) w=h*ar; else h=w/ar;
+    const to={x:cx-w/2,y:cy-h/2,w,h};
+    if(!ms){vb=to;apply();return}
+    const from={...vb}, t0=performance.now(); cancelAnimationFrame(anim);
+    const step=t=>{ let u=Math.min(1,(t-t0)/ms); u=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2; for(const k in vb) vb[k]=from[k]+(to[k]-from[k])*u; apply(); if(u<1) anim=requestAnimationFrame(step); };
+    anim=requestAnimationFrame(step);
+  }
+  const home=(ms)=>fit(MAP.apbb,.05,ms);
+  // pan / zoom
+  const ptr=new Map(); let moved=0, startDist=0, startVb=null;
+  const toSvg=(cx,cy)=>{ const r=svg.getBoundingClientRect(); const s=Math.max(vb.w/r.width,vb.h/r.height); const ox=(r.width*s-vb.w)/2, oy=(r.height*s-vb.h)/2; return [vb.x+(cx-r.left)*s-ox, vb.y+(cy-r.top)*s-oy, s]; };
+  svg.addEventListener('pointerdown',e=>{ ptr.set(e.pointerId,[e.clientX,e.clientY]); moved=0; svg.setPointerCapture(e.pointerId); if(ptr.size===2){const [a,b]=[...ptr.values()]; startDist=Math.hypot(a[0]-b[0],a[1]-b[1]); startVb={...vb};} });
+  svg.addEventListener('pointermove',e=>{ if(!ptr.has(e.pointerId)) return; const prev=ptr.get(e.pointerId); ptr.set(e.pointerId,[e.clientX,e.clientY]);
+    if(ptr.size===1){ const [,,s]=toSvg(0,0); const dx=e.clientX-prev[0], dy=e.clientY-prev[1]; moved+=Math.abs(dx)+Math.abs(dy); if(moved>6){ vb.x-=dx*s; vb.y-=dy*s; apply(); } }
+    else if(ptr.size===2){ moved=99; const [a,b]=[...ptr.values()]; const d=Math.hypot(a[0]-b[0],a[1]-b[1]); zoomAt((a[0]+b[0])/2,(a[1]+b[1])/2, startVb.w*startDist/d/vb.w); } });
+  const up=e=>{ ptr.delete(e.pointerId); };
+  svg.addEventListener('pointerup',up); svg.addEventListener('pointercancel',up);
+  function zoomAt(cx,cy,f){ const [px,py]=toSvg(cx,cy); const nw=Math.min(MAP.W,Math.max(60,vb.w*f)); const k=nw/vb.w; vb={x:px-(px-vb.x)*k,y:py-(py-vb.y)*k,w:nw,h:vb.h*k}; apply(); }
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); zoomAt(e.clientX,e.clientY,e.deltaY>0?1.15:1/1.15); },{passive:false});
+  if(opts.zoom!==false){ const zc=document.createElement('div'); zc.className='zoomctl'; zc.innerHTML='<button aria-label="Zoom avanti">+</button><button aria-label="Zoom indietro">−</button><button aria-label="Tutta la provincia" style="font-size:13px">⤢</button>'; container.appendChild(zc);
+    const r=()=>container.getBoundingClientRect(); const [zi,zo,zh]=zc.children;
+    zi.onclick=()=>{const b=r();zoomAt(b.left+b.width/2,b.top+b.height/2,1/1.4)}; zo.onclick=()=>{const b=r();zoomAt(b.left+b.width/2,b.top+b.height/2,1.4)}; zh.onclick=()=>home(500); }
+  fills.addEventListener('click',e=>{ if(moved>6) return; const p=e.target.closest('.cm'); if(p&&opts.onPick) opts.onPick(p.dataset.id); });
+  new ResizeObserver(()=>{ if(last) fit(last[0],last[1],0); }).observe(container);
+  const api={svg,paths,
+    home, fit,
+    select(id){ Object.values(paths).forEach(p=>p.classList.toggle('sel',p.dataset.id===id)); },
+    dim(on){ fills.classList.toggle('dimmed',on); },
+    only(set){ Object.values(paths).forEach(p=>p.classList.toggle('off',!!set&&!set.has(p.dataset.id))); },
+    hit(id){ Object.values(paths).forEach(p=>p.classList.toggle('hit',p.dataset.id===id)); },
+    clearHL(){ hl.innerHTML=''; },
+    highlight(id,color,keep){ if(!keep) hl.innerHTML=''; const c=COM[id]; el('path',{d:c.d,class:'hlglow',stroke:color},hl); el('path',{d:c.d,class:'hl',stroke:color},hl); paths[id].style.fill=''; },
+    tint(id,hex){ paths[id].style.fill=mix(hex,.35); },
+    untint(){ Object.values(paths).forEach(p=>p.style.fill=''); },
+    clearPins(){ pins.innerHTML=''; },
+    pin(id,color='#b8322a',num,dropAnim){ const c=COM[id]; const g=el('g',{class:'pin'},pins); g.dataset.x=c.pin[0]; g.dataset.y=c.pin[1];
+      const inner=el('g',{},g); el('ellipse',{cx:0,cy:2,rx:9,ry:4,fill:'none',stroke:color,'stroke-width':2},inner);
+      const head=el('g',{},inner); el('path',{d:'M0 0C-3-8-11-13-11-22a11 11 0 0 1 22 0C11-13 3-8 0 0Z',fill:color,stroke:'#2a1f17','stroke-width':1.5},head);
+      if(num) { const t=el('text',{x:0,y:-18,'font-size':11,'text-anchor':'middle',fill:'#fff','font-weight':700,'font-family':'Courier Prime'},head); t.textContent=num; } else el('circle',{cx:0,cy:-22,r:4,fill:'#f4ead0'},head);
+      if(dropAnim) head.animate([{transform:'translateY(-60px)',opacity:0},{transform:'translateY(4px)',opacity:1,offset:.75},{transform:'translateY(0)'}],{duration:450,easing:'ease-in'});
+      apply(); return g; },
+    labels(on){ labels.innerHTML=''; if(on) MAP.ap.forEach(c=>{ const t=el('text',{x:c.pin[0],y:c.pin[1]-4,class:'lab'},labels); t.textContent=c.nome.replace('San Benedetto del Tronto','S. Benedetto').replace(' del Tronto',' d.T.').replace(' delle Marche',' d.M.'); }); apply(); }
+  };
+  requestAnimationFrame(()=>home(0));
+  return api;
+}
+
+/* ---------- journey svg ---------- */
+// the stops sit at km/500 of the path length: 0-1 km (96,306), 100 km (109,252), 400 km (88,100), 500 km (130,26)
+const JPATH='M96 306 C136 306 142 266 110 252 C78 240 54 232 58 206 C62 180 142 184 142 154 C142 128 88 126 88 98 C88 76 118 60 130 26';
+const JLAB=[[4,326,'PIAZZA DEL POPOLO'],[122,326,'SAN FRANCESCO'],[128,243,'IL TRONTO'],[8,123,'LAGO DI PILATO'],[40,14,'GHIACCI DEL'],[40,23,'VETTORE']];
+function journeySVG(){ return `<svg viewBox="0 0 200 330" id="jsvg"><rect width="200" height="330" fill="#e9dcb6"/>
+ <g stroke="#8b7a55" fill="none" stroke-width="1.2" opacity=".75">
+  <path d="M12 312V288H50V312M26 288V268H36V288M25 268l6-6 6 6M14 312v-5a3 3 0 0 1 6 0v5M23 312v-5a3 3 0 0 1 6 0v5M32 312v-5a3 3 0 0 1 6 0v5M41 312v-5a3 3 0 0 1 6 0v5M16 297h30"/>
+  <path d="M50 314L56 298H112L118 314ZM72 298l-2 16M90 298v16M106 298l3 16M53 306H115" stroke-dasharray="2 2"/>
+  <path d="M138 314V292H172V314M149 314v-8a6 6 0 0 1 12 0v8M174 314V278H182V314M174 278l4-9 4 9M184 314V284H192V314M184 284l4-8 4 8"/>
+  <circle cx="155" cy="298" r="3"/>
+  <path d="M4 242q14-18 28 0M22 244q14-16 28 0M128 232q16-20 32 0M150 234q20-24 44 0M150 198q22-24 44 0"/>
+  <path d="M8 180l16-30 16 30M30 182l18-36 18 36M74 172l14-22 14 22M150 150l16-30 16 30M166 148l14-24 14 24M150 96l12-20 12 20M168 98l12-24 12 24"/>
+  <path d="M4 70L40 52L70 44L100 32L130 24L150 34L172 44L196 56" stroke-width="1.4"/>
+  <path d="M100 32L130 24L150 34L144 39L138 34L131 41L123 35L114 40L108 34Z" fill="#f7f4ea"/>
+ </g>
+ <g stroke="#6f8a90" fill="none" stroke-width="1.2" opacity=".85">
+  <path d="M0 247q12.5-5 25 0t25 0t25 0t25 0t25 0t25 0t25 0t25 0M0 256q12.5-5 25 0t25 0t25 0t25 0t25 0t25 0t25 0t25 0"/>
+  <path d="M38 104a12 5 0 1 0 24 0a12 5 0 1 0-24 0M62 105h2M64 106a10 4.5 0 1 0 20 0a10 4.5 0 1 0-20 0" fill="#a8c2c9"/>
+  <path d="M116 30l4 3M136 33l3-3"/>
+ </g>
+ <g stroke="#e8684a" stroke-linecap="round" fill="none">
+  <path d="M104 104q10-5 20 1" stroke-width="2.6"/>
+  <path d="M108 105.5v3M111 104.5v3.4M114 104v3.6M117 104v3.4M120 104.6v3M124 105l3-2.5M124 105l3 2.5M104 104l-3-3.5M104 104l-3.5-1" stroke-width=".7"/>
+  <circle cx="104" cy="103.6" r="1.1" fill="#2a1f17" stroke="none"/>
+ </g>
+ <g font-family="Courier Prime" font-size="8" fill="#6b5a3c" letter-spacing="1">${JLAB.map(l=>`<text x="${l[0]}" y="${l[1]}">${l[2]}</text>`).join('')}</g>
+ <path d="${JPATH}" fill="none" stroke="#6b5a3c" stroke-width="1.5" stroke-dasharray="3 4"/>
+ <path id="jprog" d="${JPATH}" fill="none" stroke="#b8322a" stroke-width="3.5" stroke-linecap="round"/>
+ <g id="jpin"><path d="M0 0C-2-6-8-9-8-16a8 8 0 0 1 16 0C8-9 2-6 0 0Z" fill="#b8322a" stroke="#2a1f17"/><circle cy="-16" r="3" fill="#f4ead0"/></g>
+</svg>`; }
+function journeySet(km,anim){
+  const p=document.getElementById('jprog'); if(!p) return; const L=p.getTotalLength(); const pin=document.getElementById('jpin');
+  const target=Math.min(1,km/500)*L; const from=parseFloat(p.dataset.v||0);
+  p.style.strokeDasharray=L; const t0=performance.now(), ms=anim?1100:0;
+  const step=t=>{ const u=ms?Math.min(1,(t-t0)/ms):1; const v=from+(target-from)*(1-Math.pow(1-u,3)); p.style.strokeDashoffset=L-v; const pt=p.getPointAtLength(Math.max(0,v)); pin.setAttribute('transform',`translate(${pt.x},${pt.y})`); if(u<1) requestAnimationFrame(step); else p.dataset.v=target; };
+  requestAnimationFrame(step);
+}
+function stopFor(km){ let s=STOPS[0]; STOPS.forEach(x=>{ if(km>=x.km) s=x; }); return s; }
+
+/* ---------- header ---------- */
+function headerHome(i){ $('hdSmall').textContent='Spedizione #'+(i+1); $('hdBig').textContent=fmtDate(dateOf(i)); $('hdProg').style.display='none'; }
+function headerPlay(){ $('hdSmall').textContent='Distanza'; $('hdBig').innerHTML=G.km+' <i>km</i>'; $('hdProg').style.display='flex'; $('where').textContent=stopFor(G.km).n;
+  $('bars').innerHTML=[0,1,2,3,4].map(k=>{ const r=G.res[k]; if(!r) return `<span class="${k===G.i?'cur':''}"></span>`; const T=r.t<0?MISS:TIERS[r.t]; const h=r.t<0?4:6+r.t*2; return `<span class="on" style="background:${T.hex};height:${h}px"></span>`; }).join(''); }
+
+/* ---------- screens ---------- */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
+let homeMap, playMap, campMap, learnMap;
+let G=null; // game state
+
+function openModal(html){ $('modalBody').innerHTML=html; $('modal').classList.add('on'); }
+$('modalX').onclick=()=>$('modal').classList.remove('on');
+$('modal').onclick=e=>{ if(e.target.id==='modal') $('modal').classList.remove('on'); };
+function toast(t){ const e=$('toast'); e.textContent=t; e.classList.add('on'); clearTimeout(e._t); e._t=setTimeout(()=>e.classList.remove('on'),1800); }
+
+const HOWTO=`<h2>Come si gioca</h2>
+<p>Ogni giorno Lentà ha una nuova <b>spedizione</b>: cinque domande, uguali per tutti. Per ognuna punta <b>un comune</b> del Piceno, del Fermano o della Val Vibrata (60 in tutto: 33 della provincia di Ascoli, 14 del Fermano, 13 del Teramano) che risponde alla domanda e conferma con <b>Pianta la bandierina</b>.</p>
+<p>Quasi sempre le risposte giuste sono tante. Quelle ovvie ti portano poco lontano, quelle a cui pensano in pochi ti portano molto più in là:</p>
+<div class="tierlist">${TIERS.map(t=>`<span class="stamp" style="color:${t.hex};font-size:13px;min-width:0">${t.n}</span><span>+${t.km} km</span>`).join('')}<span class="stamp" style="color:${MISS.hex};font-size:13px;min-width:0">${MISS.n}</span><span>0 km — risposta sbagliata</span></div>
+<p>Al massimo fai 500 km. Parti da Piazza del Popolo e dalla chiesa di San Francesco, attraversi il Tronto e sali tra colline e monti fino al Lago di Pilato. L'arrivo è sui ghiacci del Vettore.</p>
+<p>Alla fine, al <b>campo</b>, puoi vedere tutte le risposte giuste e condividere il risultato. La spedizione nuova apre a mezzanotte.</p>
+<p style="font-size:12px;color:var(--ink2)">Dati: confini ISTAT/openpolis; popolazione, superficie e altitudine ISTAT al 1/1/2026; zone climatiche DPR 412/1993; Bandiere Arancioni TCI 2025; Bandiere Blu FEE 2026; club dei Borghi più belli d'Italia.</p>`;
+$('howBtn').onclick=()=>openModal(HOWTO);
+$('menuBtn').onclick=()=>openModal(`<h2>Menu</h2><div class="menu">
+  <button onclick="goHome()">🏠 Home</button>
+  <button onclick="startDaily(dayIndex())">🧭 Spedizione di oggi</button>
+  <button onclick="startUnlimited()">∞ Spedizione illimitata</button>
+  <button onclick="openArchive()">📅 Archivio</button>
+  <button onclick="openLearn()">🗺️ Impara i comuni</button>
+  <button onclick="openModal(HOWTO)">? Come si gioca</button></div>`);
+$('archBtn').onclick=()=>openArchive();
+$('learnBtn').onclick=()=>openLearn();
+$('playBtn').onclick=()=>startDaily(dayIndex());
+$('learnBack').onclick=()=>goHome();
+
+function goHome(){ $('modal').classList.remove('on'); show('home'); const i=dayIndex(); headerHome(i); $('homeNo').textContent='N° '+(i+1);
+  const done=store.get('day:'+i,null); $('playBtn').firstChild.textContent=done&&done.res.length===5?'Rivedi la spedizione di oggi':'Gioca la spedizione di oggi';
+  if(!homeMap) homeMap=makeMap($('homeMap'),{zoom:false}); else homeMap.home(0); }
+
+function openArchive(){ const t=dayIndex(); let h='<h2>Archivio</h2><p>Gioca le spedizioni dei giorni passati.</p><div class="arch">';
+  for(let i=t;i>=0;i--){ const d=store.get('day:'+i,null); const done=d&&d.res.length===5; h+=`<button class="${done?'done':''}" onclick="startDaily(${i})"><b>#${i+1}</b>${fmtDate(dateOf(i))}${done?'<br>'+d.km+' km':''}</button>`; }
+  openModal(h+'</div>'); }
+
+function openLearn(){ $('modal').classList.remove('on'); show('learn'); $('hdSmall').textContent='Impara'; $('hdBig').textContent=MAP.ap.length+' comuni'; $('hdProg').style.display='none';
+  if(!learnMap){ learnMap=makeMap($('learnMap'),{onPick:id=>{ learnMap.select(id); const c=QS.comuni[id]; $('learnInfo').innerHTML=`<span style="font-size:16px">${COM[id].nome}</span>`+(c?` · ${c.pop.toLocaleString('it-IT')} ab. · ${String(c.km2).replace('.',',')} km² · municipio a ${c.alt} m`:''); }}); learnMap.labels(true); } }
+
+/* ---------- game ---------- */
+async function startDaily(i){ $('modal').classList.remove('on'); await FOGLIO_PRONTO; const saved=store.get('day:'+i,null);
+  // una partita salvata senza qs è stata giocata con la banca interna
+  const qs=saved?saved.qs||dailyQuestions(i):FOGLIO.giorni[ymd(dateOf(i))]||dailyQuestions(i);
+  if(qs.some(id=>!QBY[id])){ goHome(); return toast('Domande di questa spedizione non disponibili'); }
+  G={mode:'daily',day:i,qs,res:saved?saved.res:[],km:saved?saved.km:0,i:saved?saved.res.length:0};
+  if(G.i>=5) return showCamp(); beginPlay(); }
+function startUnlimited(){ $('modal').classList.remove('on'); G={mode:'free',day:null,qs:randomQuestions(),res:[],km:0,i:0}; beginPlay(); }
+function beginPlay(){ show('play'); if(!playMap) playMap=makeMap($('playMap'),{onPick:pick}); nextPrompt(true); }
+let picked=null, phase='pick', allowed=null;
+function nextPrompt(first){
+  phase='pick'; picked=null; const q=QBY[G.qs[G.i]]; allowed=QIDS.includes(q.id)?BANCA:null;
+  $('pNum').textContent=`DOMANDA ${G.i+1} DI 5`; $('pText').textContent=q.q;
+  $('side').classList.remove('open'); $('rcard').classList.remove('on'); $('newloc').classList.remove('on');
+  $('footbar').style.display='flex'; $('pinName').textContent='—'; $('dropBtn').disabled=true; $('dropBtn').classList.remove('ready');
+  $('playMap').classList.remove('revealing'); playMap.clearPins(); playMap.clearHL(); playMap.dim(false); playMap.untint(); playMap.select(null); playMap.hit(null); playMap.only(allowed);
+  headerPlay(); setTimeout(()=>playMap.home(first?0:700),60);
+}
+function pick(id){ if(phase!=='pick'||allowed&&!allowed.has(id)) return; picked=id; playMap.select(id); $('pinName').textContent=COM[id].nome; $('dropBtn').disabled=false; $('dropBtn').classList.add('ready'); snd('tick'); }
+$('dropBtn').onclick=()=>drop();
+document.addEventListener('keydown',e=>{ if($('modal').classList.contains('on')) return;
+  if((e.key===' '||e.key==='Enter')&&$('play').classList.contains('on')){ e.preventDefault(); if(phase==='pick'&&picked) drop(); else if(phase==='done') $('nextBtn').click(); } });
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function drop(){
+  if(phase!=='pick'||!picked) return; phase='reveal';
+  const q=QBY[G.qs[G.i]], a=q.a[picked], t=a?a.t:-1, T=t<0?MISS:TIERS[t], id=picked;
+  $('footbar').style.display='none'; playMap.select(null); $('playMap').classList.add('revealing');
+  playMap.fit(COM[id].bb,.35,1000); playMap.pin(id,'#b8322a',null,true); snd('pin');
+  await wait(1050);
+  // card
+  $('rNum').textContent=`BANDIERINA ${G.i+1} DI 5`; $('rName').textContent=''; const st=$('rStamp'); st.className='stamp empty'; st.innerHTML='&nbsp;'; st.style.color=''; $('rKm').textContent='··· km'; $('rKm').style.color='';
+  $('rcard').classList.add('on');
+  const nm=COM[id].nome.toUpperCase(); for(let k=1;k<=nm.length;k++){ $('rName').textContent=nm.slice(0,k); if(nm[k-1]!==' ') snd('tick'); await wait(45); }
+  await wait(250);
+  // slot shuffle
+  const pool=[...TIERS,MISS]; for(let k=0;k<12;k++){ const r=pool[k%6]; st.textContent=r.n; st.style.color='#b9a98a'; await wait(55+k*12); }
+  st.className='stamp slam'; st.textContent=T.n; st.style.color=T.hex; snd(t<0?'miss':'stamp');
+  playMap.dim(true); playMap.hit(id); playMap.highlight(id,T.hex); if(t>=0) playMap.tint(id,T.hex);
+  await wait(450);
+  const before=G.km; $('rKm').style.color=T.hex;
+  for(let v=0;v<=T.km;v+=5){ $('rKm').textContent=(T.km?'+':'')+v+' km'; if(v&&v%15===0) snd('coin'); await wait(28); }
+  $('rKm').textContent=(T.km?'+':'')+T.km+' km';
+  G.res.push({q:q.id,c:id,t}); G.km+=T.km; G.i++;
+  const newStop=stopFor(G.km).km!==stopFor(before).km;
+  if(newStop){ await wait(250); $('newloc').classList.add('on'); snd('chime'); }
+  if(G.mode==='daily') store.set('day:'+G.day,{res:G.res,km:G.km,qs:G.qs});
+  await wait(500);
+  // side panel
+  $('journey').innerHTML=journeySVG(); journeySet(before,false);
+  $('excard').innerHTML=`<div class="top"><span class="stamp" style="color:${T.hex};font-size:14px;min-width:0">${T.n}</span><b style="color:${T.hex}">${T.km?'+':''}${T.km} km</b></div>
+    <div class="q">“${COM[id].nome}”</div>${!a?'<p>Comune sbagliato: la mappa dice altro.</p>':a.e?`<p>${a.e}</p>`:''}`;
+  $('nextBtn').textContent=G.i<5?'Prossima domanda ▲':'Al campo ▲';
+  $('side').classList.add('open'); phase='done'; if(innerWidth<=760) setTimeout(()=>$('rcard').classList.remove('on'),450);
+  setTimeout(()=>{ playMap.fit(COM[id].bb,.35,400); journeySet(G.km,true); headerPlay(); },550);
+}
+$('nextBtn').onclick=()=>{ if(phase!=='done') return; if(G.i<5) nextPrompt(); else { finishGame(); showCamp(); } };
+
+/* ---------- stats ---------- */
+const SOUV=[
+ {id:'primo',n:'Primo passo',d:'Completa una spedizione',f:(s,g)=>true},
+ {id:'lontano',n:'Ess...',d:'Trova una risposta Ess...',f:(s,g)=>g.res.some(r=>r.t===4)},
+ {id:'meta',n:'Mezza strada',d:'Fai almeno 250 km',f:(s,g)=>g.km>=250},
+ {id:'vettore',n:'Al lago',d:'Arriva al Lago di Pilato (400 km)',f:(s,g)=>g.km>=400},
+ {id:'perfetta',n:'Spedizione perfetta',d:'500 km: i ghiacci del Vettore',f:(s,g)=>g.km>=500},
+ {id:'zero',n:'Nessun errore',d:'Cinque risposte giuste',f:(s,g)=>g.res.every(r=>r.t>=0)},
+ {id:'costa',n:'Lupo di mare',d:'Punta tutti i comuni sul mare',f:(s)=>Object.keys(QBY.mare.a).every(c=>s.passport.includes(c))},
+ {id:'monti',n:'Montanaro',d:'Punta Arquata, Montegallo e Montemonaco',f:(s)=>['044006', '044038', '044044'].every(c=>s.passport.includes(c))},
+ {id:'dieci',n:'Collezionista',d:'10 comuni nel passaporto',f:(s)=>s.passport.length>=10},
+ {id:'tutti',n:'Mappa completa',d:'Tutti i comuni nel passaporto',f:(s)=>s.passport.length>=MAP.ap.length},
+ {id:'sette',n:'Una settimana',d:'7 giorni di fila',f:(s)=>s.streak>=7}];
+function finishGame(){
+  const s=store.get('stats',{passport:[],souv:[],last:null,streak:0,best:0});
+  const before={p:s.passport.length,s:s.souv.length};
+  G.res.forEach(r=>{ if(r.t>=0&&!s.passport.includes(r.c)) s.passport.push(r.c); });
+  if(G.mode==='daily'&&G.day===dayIndex()&&s.last!==G.day){ s.streak=(s.last===G.day-1)?s.streak+1:1; s.last=G.day; s.best=Math.max(s.best,s.streak); }
+  SOUV.forEach(b=>{ if(!s.souv.includes(b.id)&&b.f(s,G)) s.souv.push(b.id); });
+  store.set('stats',s); G.newP=s.passport.length-before.p; G.newS=s.souv.length-before.s;
+}
+
+/* ---------- camp ---------- */
+function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}`; }
+function showCamp(){
+  show('camp'); $('modal').classList.remove('on');
+  if(G.newP===undefined){ G.newP=0; G.newS=0; }
+  $('hdSmall').textContent=G.mode==='daily'?'Spedizione #'+(G.day+1):'Spedizione illimitata'; $('hdBig').textContent='Completata'; $('hdProg').style.display='flex'; $('where').textContent=stopFor(G.km).n; G.i=5; headerPlay(); $('hdSmall').textContent=G.mode==='daily'?'Spedizione #'+(G.day+1):'Spedizione illimitata'; $('hdBig').textContent='Completata';
+  if(!campMap) campMap=makeMap($('campMap'),{onPick:()=>{}});
+  campMap.clearPins(); campMap.clearHL(); campMap.untint(); campMap.dim(false);
+  G.res.forEach((r,k)=>{ const T=r.t<0?MISS:TIERS[r.t]; if(r.t>=0) campMap.tint(r.c,T.hex); campMap.pin(r.c,T.hex,k+1); });
+  setTimeout(()=>campMap.home(0),50);
+  const s=store.get('stats',{passport:[],souv:[],streak:0});
+  const rows=G.res.map((r,k)=>{ const T=r.t<0?MISS:TIERS[r.t]; return `<li>${k+1} <em style="color:${T.hex}">${T.n}</em></li>`; }).join('');
+  const ans=G.res.map((r,k)=>{ const q=QBY[r.q], T=r.t<0?MISS:TIERS[r.t];
+    const groups=[4,3,2,1,0].map(ti=>{ const ids=Object.keys(q.a).filter(c=>q.a[c].t===ti); if(!ids.length) return '';
+      return `<div class="tr"><span style="color:${TIERS[ti].hex}">${TIERS[ti].n}<i style="background:${TIERS[ti].hex}"></i></span><span>+${TIERS[ti].km} km</span></div><div class="nn">${ids.map(c=>`<button class="${c===r.c?'mine':''}" onclick="campFocus('${r.q}','${c}')">${COM[c].nome}</button>`).join(' · ')}</div>`; }).join('');
+    return `<div class="ans"><div class="qq">${k+1} &nbsp;${esc(q.q)}</div><div class="me"><span class="stamp" style="color:${T.hex}">${T.n}</span><b>“${COM[r.c].nome}”</b><span>${T.km?'+':''}${T.km} km</span><button class="tog" onclick="this.closest('.ans').querySelector('.tiers').classList.toggle('on');campShowQ('${r.q}')">MOSTRA RISPOSTE ▸</button></div>
+      <div class="tiers">${groups}${q.note?`<p>— ${q.note}</p>`:''}</div></div>`; }).join('');
+  $('campInner').innerHTML=`
+   <div class="share"><ol>${rows}</ol><div class="badge"><small>Lentà</small><b>${G.km}<span style="font-size:12px"> km</span></b><small>${stopFor(G.km).n}</small></div>
+     <button class="sharebtn" id="shareBtn">Condividi</button></div>
+   <div class="stats"><div><b>📓 DIARIO</b>${s.streak||0} ${s.streak===1?'giorno':'giorni'} di fila</div>
+     <div>${G.newP?`<span class="nw">${G.newP} NUOVI</span>`:''}<b>🛂 PASSAPORTO</b>${s.passport.length} di ${MAP.ap.length} comuni</div>
+     <div style="cursor:pointer" onclick="openSouv()">${G.newS?`<span class="nw">${G.newS} NUOVI</span>`:''}<b>🎁 SOUVENIR</b>${s.souv.length} di ${SOUV.length}</div></div>
+   <div class="answers"><h4>LE RISPOSTE</h4>${ans}</div>
+   ${G.mode==='daily'?`<div class="countdown" id="cd"></div>`:''}
+   <button class="homebtn" onclick="${G.mode==='daily'?'goHome()':'startUnlimited()'}">${G.mode==='daily'?'Torna alla home':'Un\'altra spedizione'}</button>
+   ${G.mode==='daily'?'<button class="homebtn" onclick="startUnlimited()">∞ Gioca ancora (illimitata)</button>':'<button class="homebtn" onclick="goHome()">Torna alla home</button>'}`;
+  $('shareBtn').onclick=async()=>{ try{ await navigator.clipboard.writeText(shareText()); toast('Copiato! Incollalo dove vuoi'); }catch(e){ openModal('<h2>Condividi</h2><p>Copia questo testo:</p><pre style="white-space:pre-wrap;border:1px solid;padding:10px;font-size:15px">'+shareText()+'</pre>'); } };
+  tick();
+}
+function tick(){ const e=$('cd'); if(!e||!$('camp').classList.contains('on')) return; const n=new Date(), m=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1); const s=Math.floor((m-n)/1000);
+  e.innerHTML=`La spedizione #${dayIndex()+2} apre tra <b>${Math.floor(s/3600)} h ${Math.floor(s%3600/60)} m</b>`; setTimeout(tick,30000); }
+window.campShowQ=qid=>{ const q=QBY[qid]; campMap.clearHL(); Object.keys(q.a).forEach(c=>campMap.highlight(c,TIERS[q.a[c].t].hex,true)); campMap.home(500); };
+window.campFocus=(qid,c)=>{ campShowQ(qid); campMap.fit(COM[c].bb,.6,600); };
+window.openSouv=()=>{ const s=store.get('stats',{souv:[]}); openModal('<h2>Souvenir</h2>'+SOUV.map(b=>`<p style="opacity:${s.souv.includes(b.id)?1:.4}">${s.souv.includes(b.id)?'🎁':'🔒'} <b>${b.n}</b> — ${b.d}</p>`).join('')); };
+Object.assign(window,{goHome,startDaily,startUnlimited,openArchive,openLearn,openModal,HOWTO});
+
+goHome();
+</script>
+</body>
+</html>
