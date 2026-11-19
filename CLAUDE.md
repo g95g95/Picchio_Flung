@@ -50,12 +50,12 @@ Scrivi i nomi mostrati esattamente come in tabella, con la stessa punteggiatura 
 | Colonna nel foglio | Indice `t` | Nome mostrato | km |
 |---|---|---|---|
 | Common | 0 | ngenò | 40 |
-| Uncommon | 1 | Insolito (provvisorio) | 55 |
-| Rare | 2 | oh... | 70 |
-| Elusive | 3 | OH.... | 85 |
-| Farflung | 4 | Ess... | 100 |
+| Rare | 1 | oh... | 70 |
+| Elusive | 2 | OH.... | 85 |
+| Farflung | 3 | Ess... | 100 |
 | risposta errata (Miss) | -1 | oh capo... | 0 |
 
+- Le fasce sono 4. La fascia Uncommon non esiste.
 - I nomi sono in `TIERS` e `MISS`. I km sono quelli del prototipo.
 - Nessun CSS e nessun codice cambia maiuscole e minuscole dei nomi di fascia.
 
@@ -76,7 +76,7 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 
 - Indirizzo da mettere in `config.js`: `https://docs.google.com/spreadsheets/d/<ID>/gviz/tq?tqx=out:csv&headers=1&sheet=<scheda>`.
 - Il foglio deve essere condiviso con "chiunque abbia il link". Così l'indirizzo gviz risponde con CSV e con `Access-Control-Allow-Origin`.
-- Riga di intestazione: `data,n,domanda,Farflung,Elusive,Rare,Uncommon,Common`.
+- Riga di intestazione: `data,n,domanda,Farflung,Elusive,Rare,Common`.
 - Il gioco riconosce le colonne per nome, senza distinzione tra maiuscole e minuscole. L'ordine delle colonne è libero.
 - La colonna `n` è facoltativa. Ordina le domande del giorno. Senza `n` vale l'ordine delle righe.
 - Una riga per domanda. 5 righe per giorno.
@@ -140,7 +140,9 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 - `MAP`: `W`, `H`, `ap` (60 comuni: `id`, `nome`, `d`, `bb`, `pin`), `bg` (373 tracciati di sfondo), `sea`, `apbb`.
 - `QS.comuni`: per codice ISTAT, `nome`, `pop`, `km2`, `alt`. Contiene solo i 46 comuni AP/TE.
 - `QS.domande`: 33 domande. Ogni domanda ha `id`, `q` (testo), `note`, `a`.
-- `a` è una mappa codice ISTAT → `{t, e}`. `t` è la fascia 0-4. `e` è la spiegazione mostrata dopo la risposta.
+- `a` è una mappa codice ISTAT → `{t, e}`. `e` è la spiegazione mostrata dopo la risposta.
+- Nel file `t` è ancora la fascia 0-4 del vecchio schema a 5 fasce. Il gioco la rimappa al caricamento, subito dopo `QBY`: 0→0, 1→1, 2→1, 3→2, 4→3.
+- Gli ex Uncommon della banca (vecchio `t` 1) diventano Rare.
 - L'id di un comune è sempre il codice ISTAT a 6 cifre, come stringa.
 
 ## Stato nel browser (`localStorage`)
@@ -176,8 +178,7 @@ Tutte le chiavi hanno il prefisso `lenta:`.
 
 Chiedi all'utente prima di implementare la parte collegata. Non scegliere una risposta plausibile.
 
-1. Nome mostrato per la fascia Uncommon. Oggi è `Insolito`, provvisorio.
-2. Web server sul PC Windows 11, dominio, HTTPS, metodo di deploy.
-3. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
-4. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
-5. Etichette del percorso illeggibili su schermo stretto.
+1. Web server sul PC Windows 11, dominio, HTTPS, metodo di deploy.
+2. Giorno calcolato con l'orologio del dispositivo o con l'ora italiana.
+3. Dati di "Impara i comuni" (popolazione, superficie, altitudine) per i 14 comuni FM.
+4. Etichette del percorso illeggibili su schermo stretto.

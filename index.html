@@ -9,7 +9,7 @@
 :root{
   --paper:#f4ead0; --paper2:#efe2c2; --ink:#2a1f17; --ink2:#5b4a3a; --red:#b8322a; --navy:#22344a;
   --sea:#a8c2c9; --sea2:#97b4bc; --land:#f0e1ba; --dim:#c9ccb3; --bgland:#d9d3b6;
-  --t0:#9a8b6e; --t1:#3d8c58; --t2:#c8553d; --t3:#7656d1; --t4:#d4a017; --miss:#4a6fa5;
+  --t0:#9a8b6e; --t2:#c8553d; --t3:#7656d1; --t4:#d4a017; --miss:#4a6fa5;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#3a2c20;color:var(--ink);font-family:'Courier Prime',ui-monospace,monospace}
@@ -237,7 +237,7 @@ main{flex:1;position:relative;min-height:0}
 <script src="dati/banca.js"></script>
 <script src="config.js"></script>
 <script>
-const TIERS=[{n:'ngenò',km:40,c:'var(--t0)',hex:'#9a8b6e',e:'🟫'},{n:'Insolito',km:55,c:'var(--t1)',hex:'#3d8c58',e:'🟩'},{n:'oh...',km:70,c:'var(--t2)',hex:'#c8553d',e:'🟥'},{n:'OH....',km:85,c:'var(--t3)',hex:'#7656d1',e:'🟪'},{n:'Ess...',km:100,c:'var(--t4)',hex:'#d4a017',e:'🟨'}];
+const TIERS=[{n:'ngenò',km:40,c:'var(--t0)',hex:'#9a8b6e',e:'🟫'},{n:'oh...',km:70,c:'var(--t2)',hex:'#c8553d',e:'🟥'},{n:'OH....',km:85,c:'var(--t3)',hex:'#7656d1',e:'🟪'},{n:'Ess...',km:100,c:'var(--t4)',hex:'#d4a017',e:'🟨'}];
 const MISS={n:'oh capo...',km:0,c:'var(--miss)',hex:'#4a6fa5',e:'🟦'};
 const STOPS=[{km:0,n:'Piazza del Popolo'},{km:1,n:'San Francesco'},{km:100,n:'Il Tronto'},{km:400,n:'Lago di Pilato'},{km:500,n:'Ghiacci del Vettore'}];
 const EPOCH=new Date(2026,10,18); // spedizione #1
@@ -263,6 +263,7 @@ function fmtDate(d){ return d.getDate()+' '+MESI[d.getMonth()]; }
 function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function shuffled(arr,seed){ const r=rng(seed),a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
 const QIDS=QS.domande.map(q=>q.id), QBY={}; QS.domande.forEach(q=>QBY[q.id]=q);
+QS.domande.forEach(q=>Object.values(q.a).forEach(r=>r.t=[0,1,1,2,3][r.t])); // banca.js ha ancora 5 fasce (0-4)
 function dailyQuestions(i){
   const N=QIDS.length, out=[]; let pos=i*5;
   while(out.length<5){ const cyc=Math.floor(pos/N), q=shuffled(QIDS,1000+cyc*7919)[pos%N]; if(!out.includes(q)) out.push(q); pos++; }
@@ -272,7 +273,7 @@ function randomQuestions(){ return shuffled(QIDS,Math.floor(Math.random()*1e9)).
 
 /* ---------- foglio ---------- */
 const BANCA=new Set(Object.keys(QS.comuni)); // le domande della banca valgono solo per questi comuni
-const FASCE={farflung:4,elusive:3,rare:2,uncommon:1,common:0}, SIGLA={'044':'AP','109':'FM','067':'TE'};
+const FASCE={farflung:3,elusive:2,rare:1,common:0}, SIGLA={'044':'AP','109':'FM','067':'TE'};
 const norm=s=>s.toLowerCase().replace(/[’‘`´ʼ]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();
 const nomeKey=s=>norm(s).replace(/\s*\(\s*(\w+)\s*\)$/,' ($1)');
 const NOMI={}; MAP.ap.forEach(c=>NOMI[nomeKey(c.nome+' ('+SIGLA[c.id.slice(0,3)]+')')]=c.id);
@@ -442,7 +443,7 @@ function stopFor(km){ let s=STOPS[0]; STOPS.forEach(x=>{ if(km>=x.km) s=x; }); r
 /* ---------- header ---------- */
 function headerHome(i){ $('hdSmall').textContent='Spedizione #'+(i+1); $('hdBig').textContent=fmtDate(dateOf(i)); $('hdProg').style.display='none'; }
 function headerPlay(){ $('hdSmall').textContent='Distanza'; $('hdBig').innerHTML=G.km+' <i>km</i>'; $('hdProg').style.display='flex'; $('where').textContent=stopFor(G.km).n;
-  $('bars').innerHTML=[0,1,2,3,4].map(k=>{ const r=G.res[k]; if(!r) return `<span class="${k===G.i?'cur':''}"></span>`; const T=r.t<0?MISS:TIERS[r.t]; const h=r.t<0?4:6+r.t*2; return `<span class="on" style="background:${T.hex};height:${h}px"></span>`; }).join(''); }
+  $('bars').innerHTML=[0,1,2,3,4].map(k=>{ const r=G.res[k]; if(!r) return `<span class="${k===G.i?'cur':''}"></span>`; const T=r.t<0?MISS:TIERS[r.t]; const h=r.t<0?4:5+r.t*3; return `<span class="on" style="background:${T.hex};height:${h}px"></span>`; }).join(''); }
 
 /* ---------- screens ---------- */
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id)); }
@@ -520,7 +521,7 @@ async function drop(){
   const nm=COM[id].nome.toUpperCase(); for(let k=1;k<=nm.length;k++){ $('rName').textContent=nm.slice(0,k); if(nm[k-1]!==' ') snd('tick'); await wait(45); }
   await wait(250);
   // slot shuffle
-  const pool=[...TIERS,MISS]; for(let k=0;k<12;k++){ const r=pool[k%6]; st.textContent=r.n; st.style.color='#b9a98a'; await wait(55+k*12); }
+  const pool=[...TIERS,MISS]; for(let k=0;k<12;k++){ const r=pool[k%pool.length]; st.textContent=r.n; st.style.color='#b9a98a'; await wait(55+k*12); }
   st.className='stamp slam'; st.textContent=T.n; st.style.color=T.hex; snd(t<0?'miss':'stamp');
   playMap.dim(true); playMap.hit(id); playMap.highlight(id,T.hex); if(t>=0) playMap.tint(id,T.hex);
   await wait(450);
@@ -545,7 +546,7 @@ $('nextBtn').onclick=()=>{ if(phase!=='done') return; if(G.i<5) nextPrompt(); el
 /* ---------- stats ---------- */
 const SOUV=[
  {id:'primo',n:'Primo passo',d:'Completa una spedizione',f:(s,g)=>true},
- {id:'lontano',n:'Ess...',d:'Trova una risposta Ess...',f:(s,g)=>g.res.some(r=>r.t===4)},
+ {id:'lontano',n:'Ess...',d:'Trova una risposta Ess...',f:(s,g)=>g.res.some(r=>r.t===3)},
  {id:'meta',n:'Mezza strada',d:'Fai almeno 250 km',f:(s,g)=>g.km>=250},
  {id:'vettore',n:'Al lago',d:'Arriva al Lago di Pilato (400 km)',f:(s,g)=>g.km>=400},
  {id:'perfetta',n:'Spedizione perfetta',d:'500 km: i ghiacci del Vettore',f:(s,g)=>g.km>=500},
@@ -577,7 +578,7 @@ function showCamp(){
   const s=store.get('stats',{passport:[],souv:[],streak:0});
   const rows=G.res.map((r,k)=>{ const T=r.t<0?MISS:TIERS[r.t]; return `<li>${k+1} <em style="color:${T.hex}">${T.n}</em></li>`; }).join('');
   const ans=G.res.map((r,k)=>{ const q=QBY[r.q], T=r.t<0?MISS:TIERS[r.t];
-    const groups=[4,3,2,1,0].map(ti=>{ const ids=Object.keys(q.a).filter(c=>q.a[c].t===ti); if(!ids.length) return '';
+    const groups=[3,2,1,0].map(ti=>{ const ids=Object.keys(q.a).filter(c=>q.a[c].t===ti); if(!ids.length) return '';
       return `<div class="tr"><span style="color:${TIERS[ti].hex}">${TIERS[ti].n}<i style="background:${TIERS[ti].hex}"></i></span><span>+${TIERS[ti].km} km</span></div><div class="nn">${ids.map(c=>`<button class="${c===r.c?'mine':''}" onclick="campFocus('${r.q}','${c}')">${COM[c].nome}</button>`).join(' · ')}</div>`; }).join('');
     return `<div class="ans"><div class="qq">${k+1} &nbsp;${esc(q.q)}</div><div class="me"><span class="stamp" style="color:${T.hex}">${T.n}</span><b>“${COM[r.c].nome}”</b><span>${T.km?'+':''}${T.km} km</span><button class="tog" onclick="this.closest('.ans').querySelector('.tiers').classList.toggle('on');campShowQ('${r.q}')">MOSTRA RISPOSTE ▸</button></div>
       <div class="tiers">${groups}${q.note?`<p>— ${q.note}</p>`:''}</div></div>`; }).join('');
