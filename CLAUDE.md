@@ -24,7 +24,7 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 
 - `index.html`: HTML, CSS e codice del gioco (ultimo `<script>`).
 - `font.css`: i font (Courier Prime, Special Elite, Bowlby One SC) in base64.
-- `config.js`: `FOGLIO_URL`, l'indirizzo del foglio. Nel repo punta a `esempi/foglio-esempio.csv`.
+- `config.js`: `FOGLIO_URL`, l'indirizzo gviz del foglio Google di produzione (ID `1YAElF7vVaW4vuYidjoyHX77r3uYjYv_6I5LuK3XZ4Pg`, prima scheda). Per provare senza foglio si può puntare a `esempi/foglio-esempio.csv`.
 - `dati/mappa.js`: `const MAP` con i 46 comuni AP/TE e lo sfondo.
 - `dati/comuni-extra.js`: aggiunge a `MAP.ap` i 40 comuni FM e ricalcola `MAP.apbb`. È generato: non modificarlo a mano.
 - `dati/banca.js`: `const QS` con i dati dei comuni e la banca interna di domande.
