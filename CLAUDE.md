@@ -8,7 +8,8 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 
 ## Decisioni prese
 
-- Il gioco è solo frontend. Non esiste backend, non esistono script lato server, non esistono account.
+- Il gioco è solo frontend. Non esistono account. Il server non riceve né salva dati dei giocatori.
+- `server.py` serve file statici. L'unica eccezione: sceglie i meta tag dell'anteprima del link in base a `km` e `n`. Vedi "Condivisione".
 - L'hosting è un PC Windows 11 di casa (homeserver) che serve file statici. Vedi "Pubblicazione".
 - Un foglio Google contiene, per ogni giorno, le 5 domande con i comuni validi.
 - Il browser legge il foglio direttamente, come CSV dall'indirizzo gviz. Vedi "Foglio Google".
@@ -29,21 +30,24 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 - `dati/banca.js`: `const QS` con i dati dei comuni e la banca interna di domande.
 - `strumenti/aggiungi-comuni.mjs`: genera `dati/comuni-extra.js`.
 - `anteprima.png`: immagine 1200x630 dell'anteprima del link nei messaggi. La genera `strumenti/anteprima.html` (comando nel file).
+- `anteprime/<km>.jpg`: 101 immagini 1200x630 dell'anteprima del link con il risultato, una per ogni multiplo di 5 da 0 a 500. Le genera `strumenti/anteprime-risultato.mjs`.
 - `esempi/spedizione-esempio.txt`: una spedizione nel testo originale dell'utente, con due correzioni confermate. Carassai è AP. Il nome corretto è "Montefalcone Appennino".
 - `esempi/foglio-esempio.csv`: la stessa spedizione nel formato del foglio, data 2026-11-19. Si può importare in Google Sheets.
 - `index.html` carica gli script in questo ordine: `dati/mappa.js`, `dati/comuni-extra.js`, `dati/banca.js`, `config.js`, gioco.
 - `dati/mappa.js` e `dati/banca.js` hanno righe molto lunghe. Leggili con uno script, non con un editor.
 - Gli script che hanno generato `dati/mappa.js` e `dati/banca.js` non sono nel repo.
-- Non esistono build, dipendenze o test. Il codice è JavaScript puro.
+- Non esistono build né dipendenze. Il codice è JavaScript puro.
+- `tests/test_server.py` controlla solo `server.py`. Comando dalla radice: `python -m unittest discover tests`.
 - `server.py`, `RIAVVIA.bat`, `FERMA.bat`, `INSTALLA.bat`, `servizio/`: il servizio Windows che pubblica il gioco. Vedi "Pubblicazione".
 
 ## Pubblicazione
 
 - `server.py` (Python 3.12, solo libreria standard) serve il gioco su `127.0.0.1:8795`. `GET /healthz` risponde `ok`.
-- `server.py` serve solo i file in `PUBBLICI` e i `.js` di `dati/`. Tutto il resto del repo risponde 404.
+- `server.py` serve solo i file in `PUBBLICI`, i `.js` di `dati/` e i `.jpg` di `anteprime/`. Tutto il resto del repo risponde 404.
 - Un nuovo file pubblico (immagine, suono, altro script) va aggiunto a `PUBBLICI` o `CARTELLE_PUBBLICHE`, altrimenti risponde 404.
-- Indirizzo pubblico: `https://lenta.tttai.it`. Da Internet si arriva solo tramite il tunnel cloudflared del PC, che punta a `http://127.0.0.1:8795`.
-- Cloudflare Access ha un'eccezione Bypass per `lenta.tttai.it`: il gioco si apre senza login.
+- Indirizzo pubblico: `https://lendane.tttai.it`. Da Internet si arriva solo tramite il tunnel cloudflared del PC, che punta a `http://127.0.0.1:8795`.
+- Il gioco si apre senza login di Cloudflare Access. Anche i lettori delle anteprime (WhatsApp, Telegram) ricevono la pagina.
+- Il vecchio indirizzo `lenta.tttai.it` non risolve più.
 - Il server gira come attività pianificata `PicchioFlung` con l'account dedicato `picchioflung-svc`, che può scrivere solo in `logs/`.
 - `INSTALLA.bat` installa il servizio. `RIAVVIA.bat` fa `git pull --ff-only` e riavvia. `FERMA.bat` ferma. La configurazione è `servizio/servizio.json`.
 - A ogni push su `main` AutoDeploy lancia `RIAVVIA.bat` nella copia `C:\Users\Giulio\Desktop\Guloi\Picchio_Flung`. Quella copia deve restare sul branch `main`.
@@ -51,11 +55,29 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 
 ## Condivisione
 
-- Il testo condiviso finisce con il link `SITO` (`https://lenta.tttai.it`), costante in `index.html`.
+- Il testo condiviso finisce con il link del risultato: `https://lendane.tttai.it/?km=295&n=2`.
+- `n` è il numero della spedizione. C'è solo in modalità quotidiana e archivio. In modalità illimitata il link ha solo `km`.
+- L'indirizzo base è `SITO`, costante in `index.html`. Il gioco ignora `km` e `n` all'apertura.
 - Sul telefono il bottone Condividi apre il foglio di condivisione del sistema (`navigator.share`). Sul computer copia il testo negli appunti.
 - I meta tag Open Graph in `<head>` danno l'anteprima del link: titolo, descrizione, `anteprima.png`. `og:url` e `og:image` hanno l'indirizzo completo.
+- WhatsApp e Telegram leggono i meta tag dall'HTML. Non eseguono JavaScript.
+- Con `km` valido `server.py` risponde con `index.html` con questi meta tag cambiati: `og:url`, `og:title`, `og:image`, `og:image:type`, `og:image:width`, `og:image:height`, `og:image:alt`.
+- `og:image` diventa `anteprime/<km>.jpg`. `og:title` diventa `Lentà #2 — 295 km`, o `Lentà — 295 km` senza `n`. `og:description` non cambia.
+- `km` valido: da 1 a 3 cifre, multiplo di 5, da 0 a 500. `n` valido: da 1 a 5 cifre, da 1 a 99999. Gli altri parametri sono ignorati.
+- Con `km` o `n` non validi `server.py` risponde con `index.html` invariato.
+- `server.py` ricava gli indirizzi dai meta tag `og:url` e `og:image` di `index.html`. Il dominio è scritto solo in `index.html`.
+- Se un meta tag atteso manca o è doppio, `server.py` risponde con `index.html` invariato e scrive una riga nel log. Il test `tests/test_server.py` lo controlla.
 - Se cambia il dominio vanno aggiornati `SITO` e i meta tag `og:url` e `og:image`.
 - WhatsApp e Telegram tengono in cache l'anteprima di un link per giorni.
+
+### Rigenerare `anteprime/`
+
+- Comando: `node strumenti/anteprime-risultato.mjs` dalla radice del repo. Servono Node 24, Python ed Edge.
+- Rigenera le immagini quando cambiano il disegno del percorso (`journeySVG`, `JPATH`, `JLAB`) o `STOPS`.
+- Lo script avvia `server.py` su una porta libera e apre il gioco in Edge headless.
+- Lo script disegna l'immagine dentro la pagina con `journeySVG`, `journeySet` e `stopFor` del gioco.
+- Lo script ferma Edge e il server alla fine, anche dopo un errore.
+- Ogni immagine deve restare sotto 100 KB. Lo script si ferma con un errore se un file la supera.
 
 ### Rigenerare `dati/comuni-extra.js`
 

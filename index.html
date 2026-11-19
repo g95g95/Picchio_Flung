@@ -10,10 +10,10 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Lentà">
 <meta property="og:locale" content="it_IT">
-<meta property="og:url" content="https://lenta.tttai.it/">
+<meta property="og:url" content="https://lendane.tttai.it/">
 <meta property="og:title" content="Lentà — La spedizione quotidiana">
 <meta property="og:description" content="Piceno, Fermano e Val Vibrata. Cinque domande al giorno: punta un comune, le risposte rare vanno più lontano.">
-<meta property="og:image" content="https://lenta.tttai.it/anteprima.png">
+<meta property="og:image" content="https://lendane.tttai.it/anteprima.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -584,8 +584,8 @@ function finishGame(){
 }
 
 /* ---------- camp ---------- */
-const SITO='https://lenta.tttai.it';
-function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}\n${SITO}`; }
+const SITO='https://lendane.tttai.it';
+function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}\n${SITO}/?km=${G.km}${G.mode==='daily'?'&n='+(G.day+1):''}`; }
 // Telefono: foglio di condivisione del sistema (WhatsApp, Telegram...). Computer o rifiuto: copia negli appunti.
 async function shareResult(){ const t=shareText();
   if(navigator.share&&matchMedia('(pointer:coarse)').matches){ try{ await navigator.share({text:t}); return; }catch(e){ if(e.name==='AbortError') return; } }

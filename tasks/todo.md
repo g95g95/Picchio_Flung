@@ -47,3 +47,13 @@ Crea `strumenti/aggiungi-comuni.mjs` (Node 24, usa `fetch`) e l'output `dati/com
 - [x] C8. Le 33 domande della banca interna valgono solo per i 46 comuni di `QS.comuni`. Quando la domanda viene dalla banca, gli altri comuni non sono selezionabili e hanno un aspetto spento. Con una domanda del foglio tutti i comuni sono selezionabili.
 - [x] C9. "Impara i comuni": un comune senza dati in `QS.comuni` mostra solo il nome.
 - [x] C10. Aggiorna `CLAUDE.md`: stato attuale, formato del foglio, file del progetto, decisioni aperte risolte.
+
+## Task E — Dominio nuovo e anteprima del risultato nel link condiviso
+
+Contesto: il sito è `https://lendane.tttai.it`. Il vecchio `lenta.tttai.it` non risolve più, quindi oggi il link condiviso e `og:image` sono rotti. L'utente vuole che il link incollato in chat mostri un'immagine del percorso (da Piazza del Popolo ai ghiacci del Vettore) con il punto raggiunto.
+
+- [x] E1. Dominio: `SITO` e i meta `og:url`, `og:image` in `index.html` passano a `https://lendane.tttai.it`.
+- [x] E2. Link condiviso: `shareText()` finisce con `${SITO}/?km=<km>` e, in modalità quotidiana, `&n=<numero spedizione>`. Il gioco ignora questi parametri all'apertura.
+- [x] E3. Immagini: `strumenti/anteprime-risultato.mjs` (Node 24, nessuna dipendenza, Edge headless via CDP) genera `anteprime/<km>.jpg`, 1200x630, per ogni km multiplo di 5 da 0 a 500 (101 file). L'immagine mostra il disegno del percorso con lo sprite alla posizione dei km, il numero di km, il nome della tappa e il nome "LENTÀ". Il disegno deve venire dal codice del gioco (`journeySVG`, `journeySet`, `stopFor`), non da una copia: lo script apre il gioco da un server locale e costruisce l'immagine dentro la pagina.
+- [x] E4. `server.py`: per `/` e `/index.html` con `km` valido (intero, multiplo di 5, 0..500) e `n` facoltativo (intero 1..99999) risponde con `index.html` in cui `og:image` punta a `anteprime/<km>.jpg`, e `og:image:type`, dimensioni, `og:title`, `og:url`, `og:image:alt` sono coerenti. Parametri assenti o non validi: pagina invariata. Il dominio resta scritto solo in `index.html`. La cartella `anteprime/` serve solo file `.jpg`.
+- [x] E5. `CLAUDE.md`: sezioni "Pubblicazione" e "Condivisione", elenco dei file, decisione "solo frontend" (il server ora sceglie i meta tag dell'anteprima).
