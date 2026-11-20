@@ -291,7 +291,9 @@ const BANCA=new Set(Object.keys(QS.comuni)); // le domande della banca valgono s
 const FASCE={farflung:3,elusive:2,rare:1,common:0}, SIGLA={'044':'AP','109':'FM','067':'TE'};
 const norm=s=>s.toLowerCase().replace(/[’‘`´ʼ]/g,"'").replace(/\s*'\s*/g,"'").replace(/\s+/g,' ').trim();
 const nomeKey=s=>norm(s).replace(/\s*\(\s*(\w+)\s*\)$/,' ($1)');
-const NOMI={}; MAP.ap.forEach(c=>NOMI[nomeKey(c.nome+' ('+SIGLA[c.id.slice(0,3)]+')')]=c.id);
+// Nel foglio vale "Nome (SIGLA)" e anche il nome da solo, se nessun altro comune della mappa ha lo stesso nome.
+const NOMI={}, SOLO={}; MAP.ap.forEach(c=>{ NOMI[nomeKey(c.nome+' ('+SIGLA[c.id.slice(0,3)]+')')]=c.id; const k=nomeKey(c.nome); SOLO[k]=k in SOLO?null:c.id; });
+Object.entries(SOLO).forEach(([k,id])=>{ if(id) NOMI[k]=id; });
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const p2=n=>String(n).padStart(2,'0');
 function ymd(d){ return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); }

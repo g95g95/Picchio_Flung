@@ -130,7 +130,7 @@ Una spedizione ha 5 domande. Ogni domanda ha:
 - Una riga per domanda. 5 righe per giorno.
 - `data` è in formato `AAAA-MM-GG` o `GG/MM/AAAA`. Se la cella è vuota vale la data della riga sopra.
 - Il valore della cella `data` mostrato nel foglio deve avere uno di questi due formati.
-- Ogni cella di fascia contiene comuni separati da virgola, nel formato `Nome (SIGLA)`.
+- Ogni cella di fascia contiene comuni separati da virgola, nel formato `Nome (SIGLA)` o solo `Nome`. Il nome da solo vale se nessun altro comune della mappa ha lo stesso nome (oggi tutti gli 86 nomi sono diversi).
 - Il confronto dei nomi ignora maiuscole, spazi in più e tipo di apostrofo.
 - Il codice ISTAT viene dai nomi di `MAP.ap`: prefisso `044` = AP, `109` = FM, `067` = TE.
 - Un giorno è valido se ha 5 domande, ognuna con testo e almeno un comune riconosciuto.
