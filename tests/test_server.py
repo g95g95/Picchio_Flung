@@ -24,6 +24,7 @@ class AnteprimaRisultato(unittest.TestCase):
             "km=295&n=2": (295, 2),
             "km=0": (0, None),
             "km=500&fbclid=abc": (500, None),
+            "km=295&n=2&s=0aaa3x": (295, 2),
             "": None,
             "km=7": None,
             "km=505": None,

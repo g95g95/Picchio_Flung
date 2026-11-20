@@ -585,11 +585,27 @@ function finishGame(){
 
 /* ---------- camp ---------- */
 const SITO='https://lendane.tttai.it';
-function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map((r,k)=>`${k+1} ${(r.t<0?MISS:TIERS[r.t]).e} ${COM[r.c].nome}`).join('\n')}\n${stopFor(G.km).n}\n${SITO}/?km=${G.km}${G.mode==='daily'?'&n='+(G.day+1):''}`; }
+function shareText(){ const n=G.mode==='daily'?'#'+(G.day+1):'∞'; return `LENTÀ ${n} 🧭 ${G.km} km\n${G.res.map(r=>(r.t<0?MISS:TIERS[r.t]).e).join('')}\n${stopFor(G.km).n}\n${SITO}/?km=${G.km}${G.mode==='daily'?'&n='+(G.day+1)+'&s='+codScelte(G.res):''}`; }
 // Telefono: foglio di condivisione del sistema (WhatsApp, Telegram...). Computer o rifiuto: copia negli appunti.
 async function shareResult(){ const t=shareText();
   if(navigator.share&&matchMedia('(pointer:coarse)').matches){ try{ await navigator.share({text:t}); return; }catch(e){ if(e.name==='AbortError') return; } }
   try{ await navigator.clipboard.writeText(t); toast('Copiato! Incollalo dove vuoi'); }catch(e){ openModal('<h2>Condividi</h2><p>Copia questo testo:</p><pre style="white-space:pre-wrap;border:1px solid;padding:10px;font-size:15px">'+esc(t)+'</pre>'); } }
+/* ---------- le scelte di chi ha mandato il link ---------- */
+// s = per ogni domanda il codice ISTAT in base 36 (4 caratteri) e la fascia (0-3, x = errata). Si vede solo dopo aver giocato la stessa spedizione.
+function codScelte(res){ return res.map(r=>(+r.c).toString(36).padStart(4,'0')+(r.t<0?'x':r.t)).join(''); }
+function leggiScelte(s){ if(!/^([0-9a-z]{4}[0-3x]){5}$/.test(s||'')) return null; const res=[];
+  for(let k=0;k<25;k+=5){ const c=String(parseInt(s.slice(k,k+4),36)).padStart(6,'0'); if(!COM[c]) return null; res.push({c,t:s[k+4]==='x'?-1:+s[k+4]}); }
+  return res; }
+const AMICO=(()=>{ const p=new URLSearchParams(location.search), n=p.get('n'), res=leggiScelte(p.get('s'));
+  if(!res||!/^[0-9]{1,5}$/.test(n||'')||+n<1) return null;
+  return {day:+n-1,res,km:res.reduce((a,r)=>a+(r.t<0?0:TIERS[r.t].km),0)}; })();
+function apriAmico(){ const A=AMICO, d=store.get('day:'+A.day,null), mio=d&&d.res.length===5?d:null, h=`<h2>Spedizione #${A.day+1}</h2>`;
+  if(A.day>dayIndex()) return openModal(h+'<p>Questa spedizione qui non è ancora aperta.</p>');
+  if(!mio) return openModal(h+`<p>Ti hanno mandato un risultato: <b>${A.km} km</b>. I comuni scelti si vedono solo dopo che hai giocato anche tu questa spedizione.</p><div class="menu"><button onclick="startDaily(${A.day})">🧭 Gioca la spedizione #${A.day+1}</button></div>`);
+  const qs=mio.qs||dailyQuestions(A.day), riga=(chi,r)=>{ const T=r.t<0?MISS:TIERS[r.t]; return `<div class="me"><span style="min-width:3em">${chi}</span><span class="stamp" style="color:${T.hex}">${T.n}</span><b>${COM[r.c].nome}</b></div>`; };
+  openModal(h+`<p>Link: <b>${A.km} km</b> · Tu: <b>${mio.km} km</b></p>`+A.res.map((r,k)=>{ const q=QBY[qs[k]];
+    return `<div class="ans"><div class="qq">${k+1} &nbsp;${q?esc(q.q):''}</div>${riga('Link',r)}${riga('Tu',mio.res[k])}</div>`; }).join('')); }
+
 function showCamp(){
   show('camp'); $('modal').classList.remove('on');
   if(G.newP===undefined){ G.newP=0; G.newS=0; }
@@ -606,6 +622,7 @@ function showCamp(){
     return `<div class="ans"><div class="qq">${k+1} &nbsp;${esc(q.q)}</div><div class="me"><span class="stamp" style="color:${T.hex}">${T.n}</span><b>“${COM[r.c].nome}”</b><span>${T.km?'+':''}${T.km} km</span><button class="tog" onclick="this.closest('.ans').querySelector('.tiers').classList.toggle('on');campShowQ('${r.q}')">MOSTRA RISPOSTE ▸</button></div>
       <div class="tiers">${groups}${q.note?`<p>— ${q.note}</p>`:''}</div></div>`; }).join('');
   $('campInner').innerHTML=`
+   ${AMICO&&G.mode==='daily'&&G.day===AMICO.day?'<button class="homebtn" onclick="apriAmico()">👀 Confronta con chi ti ha mandato il link</button>':''}
    <div class="share"><ol>${rows}</ol><div class="badge"><small>Lentà</small><b>${G.km}<span style="font-size:12px"> km</span></b><small>${stopFor(G.km).n}</small></div>
      <button class="sharebtn" id="shareBtn">Condividi</button></div>
    <div class="stats"><div><b>📓 DIARIO</b>${s.streak||0} ${s.streak===1?'giorno':'giorni'} di fila</div>
@@ -623,9 +640,10 @@ function tick(){ const e=$('cd'); if(!e||!$('camp').classList.contains('on')) re
 window.campShowQ=qid=>{ const q=QBY[qid]; campMap.clearHL(); Object.keys(q.a).forEach(c=>campMap.highlight(c,TIERS[q.a[c].t].hex,true)); campMap.home(500); };
 window.campFocus=(qid,c)=>{ campShowQ(qid); campMap.fit(COM[c].bb,.6,600); };
 window.openSouv=()=>{ const s=store.get('stats',{souv:[]}); openModal('<h2>Souvenir</h2>'+SOUV.map(b=>`<p style="opacity:${s.souv.includes(b.id)?1:.4}">${s.souv.includes(b.id)?'🎁':'🔒'} <b>${b.n}</b> — ${b.d}</p>`).join('')); };
-Object.assign(window,{goHome,startDaily,startUnlimited,openArchive,openLearn,openModal,HOWTO});
+Object.assign(window,{apriAmico,goHome,startDaily,startUnlimited,openArchive,openLearn,openModal,HOWTO});
 
 goHome();
+if(AMICO) FOGLIO_PRONTO.then(apriAmico);
 </script>
 </body>
 </html>

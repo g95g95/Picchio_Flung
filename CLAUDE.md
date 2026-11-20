@@ -55,10 +55,13 @@ Le regole generali di lavoro sono in `C:\Users\pisel\.claude\CLAUDE.md`. Questo 
 
 ## Condivisione
 
-- Il testo condiviso ha una riga per domanda: numero, quadratino della fascia, nome del comune scelto (`1 🟨 Offida`). Il comune si vede anche con risposta errata. Chi non ha ancora giocato vede le risposte: è una scelta dell'utente.
-- Il testo condiviso finisce con il link del risultato: `https://lendane.tttai.it/?km=295&n=2`.
+- Il testo condiviso ha la riga dei quadratini delle fasce, senza nomi di comuni. Finisce con il link del risultato: `https://lendane.tttai.it/?km=295&n=2&s=<scelte>`.
+- `s` contiene i comuni scelti e le fasce. C'è solo in modalità quotidiana e archivio. Per ogni domanda: codice ISTAT in base 36 su 4 caratteri, poi la fascia (`0`-`3`, `x` = errata). 25 caratteri. Lo scrive `codScelte`, lo legge `leggiScelte`.
+- Aprendo un link con `n` e `s` validi il gioco apre un modal. Se chi apre non ha finito la spedizione `n`, vede solo i km e il bottone per giocarla. Se l'ha finita, vede per ogni domanda il comune del link e il suo.
+- Dopo aver finito la spedizione del link, il campo mostra il bottone "Confronta con chi ti ha mandato il link".
+- `s` non è cifrato. Chi decodifica il link vede i comuni scelti. Vale la stessa regola delle risposte leggibili nel browser.
 - `n` è il numero della spedizione. C'è solo in modalità quotidiana e archivio. In modalità illimitata il link ha solo `km`.
-- L'indirizzo base è `SITO`, costante in `index.html`. Il gioco ignora `km` e `n` all'apertura.
+- L'indirizzo base è `SITO`, costante in `index.html`. Il gioco ignora `km` all'apertura. Usa `n` solo insieme a `s`.
 - Sul telefono il bottone Condividi apre il foglio di condivisione del sistema (`navigator.share`). Sul computer copia il testo negli appunti.
 - I meta tag Open Graph in `<head>` danno l'anteprima del link: titolo, descrizione, `anteprima.png`. `og:url` e `og:image` hanno l'indirizzo completo.
 - WhatsApp e Telegram leggono i meta tag dall'HTML. Non eseguono JavaScript.
