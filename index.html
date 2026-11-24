@@ -24,7 +24,7 @@
 :root{
   --paper:#f4ead0; --paper2:#efe2c2; --ink:#2a1f17; --ink2:#5b4a3a; --red:#b8322a; --navy:#22344a;
   --sea:#a8c2c9; --sea2:#97b4bc; --land:#f0e1ba; --dim:#c9ccb3; --bgland:#d9d3b6;
-  --t0:#9a8b6e; --t2:#c8553d; --t3:#7656d1; --t4:#d4a017; --miss:#4a6fa5;
+  --t0:#3f8f4a; --t2:#c8553d; --t3:#7656d1; --t4:#d4a017; --miss:#4a6fa5;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:#3a2c20;color:var(--ink);font-family:'Courier Prime',ui-monospace,monospace}
@@ -252,7 +252,7 @@ main{flex:1;position:relative;min-height:0}
 <script src="dati/banca.js"></script>
 <script src="config.js"></script>
 <script>
-const TIERS=[{n:'ngenò',km:40,c:'var(--t0)',hex:'#9a8b6e',e:'🟫'},{n:'oh...',km:70,c:'var(--t2)',hex:'#c8553d',e:'🟥'},{n:'OH....',km:85,c:'var(--t3)',hex:'#7656d1',e:'🟪'},{n:'Ess...',km:100,c:'var(--t4)',hex:'#d4a017',e:'🟨'}];
+const TIERS=[{n:'ngenò',km:40,c:'var(--t0)',hex:'#3f8f4a',e:'🟩'},{n:'oh...',km:70,c:'var(--t2)',hex:'#c8553d',e:'🟥'},{n:'OH....',km:85,c:'var(--t3)',hex:'#7656d1',e:'🟪'},{n:'Ess...',km:100,c:'var(--t4)',hex:'#d4a017',e:'🟨'}];
 const MISS={n:'oh capo...',km:0,c:'var(--miss)',hex:'#4a6fa5',e:'🟦'};
 const STOPS=[{km:0,n:'Piazza del Popolo'},{km:1,n:'San Francesco'},{km:100,n:'Il Tronto'},{km:400,n:'Lago di Pilato'},{km:500,n:'Ghiacci del Vettore'}];
 const EPOCH=new Date(2026,10,18); // spedizione #1
